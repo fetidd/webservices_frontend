@@ -71,6 +71,9 @@ class RequestWindow(QDialog):
             self.layout.addWidget(self.submitButton)
             self.setLayout(self.layout)
         else:  # open the batch window with a table of passed-in transactions
+            # Remove transactions that are not AUTHS with settlestatus=100
+            # Show a table with the remaining transactions, doubleclickable and selectable
+            # submit button makes a queue of refund requests, one for each selected transaction or all if none are selected
             pass
 
     def _setupTransactionUpdate(self):
