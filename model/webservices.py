@@ -1,9 +1,9 @@
 import securetrading
-from lib.exceptions import InvalidFieldError
 from lib.logger import createLogger
 import datetime
 
 log = createLogger(__name__)
+
 
 class Webservices:
     def __init__(self):
@@ -24,31 +24,30 @@ class Webservices:
         request = {
             "requesttypedescriptions": ["TRANSACTIONQUERY"],
             "filter": {
-                "starttimestamp": [{"value": str(datetime.datetime.now().date())+" 00:00:00"}],
-                "endtimestamp": [{"value": str(datetime.datetime.now().date())+" 23:59:59"}],
+                "starttimestamp": [{"value": str(datetime.datetime.now().date()) + " 00:00:00"}],
+                "endtimestamp": [{"value": str(datetime.datetime.now().date()) + " 23:59:59"}],
             }
         }
-        response = self.makeRequest(request)
-        if response["responses"][0]["errorcode"] == '0':
+        response = self.makeRequest(request)["responses"][0]
+        if response["errorcode"] == '0':
             log.debug("Login successful!")
             self.loggedIn = True
             return response
         else:
-            log.error("Login failed...")
-            raise InvalidFieldError(response["errordata"])
+            errString = f"[{response['errorcode']}] {response['errormessage']} {response['errordata']}"
+            log.error(errString)
+            raise Exception(errString)
 
     def makeRequest(self, request: dict) -> dict:
         log.debug("Making a new request:")
-        log.debug("\t--> "+str(request))
+        log.debug("\t--> " + str(request))
         isMultiRequest = True if len(request["requesttypedescriptions"]) > 1 else False
         # Send request to Trust Payments Webservices API
         response = self._send(request)
-        log.debug("\t<-- "+str(response))
+        log.debug("\t<-- " + str(response))
         return response
 
-
-
-# PRIVATE METHODS --------------------------------------------------------------------
+    # PRIVATE METHODS --------------------------------------------------------------------
     def _send(self, request: dict) -> dict:
         strequest = securetrading.Request()
         strequest.update(request)

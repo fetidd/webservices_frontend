@@ -25,3 +25,6 @@ class TransactionStore:
         for t in transactions:
             log.debug(f"\t--> " + str(t))
         return transactions
+
+    def clear(self):
+        self._data = {}

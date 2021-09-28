@@ -1,6 +1,8 @@
 import colorlog, sys, os
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 def createLogger(name, level=os.environ.get("WS_LOGLEVEL", "info")):
     levels = {
@@ -16,10 +18,10 @@ def createLogger(name, level=os.environ.get("WS_LOGLEVEL", "info")):
         datefmt=None,
         reset=True,
         log_colors={
-            'DEBUG':    'cyan',
-            'INFO':     'green',
-            'WARNING':  'yellow',
-            'ERROR':    'red',
+            'DEBUG': 'cyan',
+            'INFO': 'green',
+            'WARNING': 'yellow',
+            'ERROR': 'red',
             'CRITICAL': 'red,bg_white',
         },
         secondary_log_colors={},
