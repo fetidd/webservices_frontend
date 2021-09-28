@@ -43,7 +43,7 @@ class WSMain(QMainWindow):
         Fill the table with Transactions.
         """
         # clear current
-        log.debug(f"in populateTable with {len(transactions)} transactions")
+        log.debug(f"populateTable called with {len(transactions)} transactions")
         row = 0
         table = self.table
         for transaction in sorted(transactions, reverse=True, key=lambda x: x["transactionstartedtimestamp"]):
@@ -57,7 +57,7 @@ class WSMain(QMainWindow):
                 col += 1
             row += 1
         table.resizeColumnsToContents()
-        log.debug("exiting populateTable")
+        log.debug("populateTable returning")
 
     def clearTable(self):
         self.table.setRowCount(0)

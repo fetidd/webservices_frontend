@@ -76,35 +76,41 @@ class Controller:
         log.debug("_submitRequest called")
         window = self.requestWindow
         if window.requestType == RequestType.TRANSACTIONQUERY:
-            log.debug("sending TRANSACTIONQUERY")
-            # Get selected start and end dates
-            start = window.startInput.selectedDate().toString(Qt.DateFormat.ISODate) + " 00:00:00"
-            end = window.endInput.selectedDate().toString(Qt.DateFormat.ISODate) + " 23:59:59"
-            # Create a filter from the dropdown rows
-            rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
-            reqFilter = {list(row.keys())[0].currentText(): [{"value": val.strip()} for val in list(row.values())[0].text().split(',')] for row in rows}
-            # Remove empty rows from the filter
-            if "" in reqFilter.keys():
-                del reqFilter[""]
-            reqFilter["starttimestamp"] = [{"value": start}]
-            reqFilter["endtimestamp"] = [{"value": end}]
-            response = self.api.makeRequest({
-                "requesttypedescriptions": ["TRANSACTIONQUERY"],
-                "filter": reqFilter
-            })
-            response = response["responses"][0]
-            if response["errorcode"] != "0":
-                errString = f"{response['errorcode']} {response['errormessage']} {response['errordata']}"
-                Error(errString).exec()
-                log.error(errString)
-            elif int(response["found"]) > 0:
-                self.model.clear()
-                self.model.add(response["records"])
-                self.view.clearTable()
-                self.view.populateTable(self.model.getAll())
-                window.close()
-            else:
-                msg = "Didn't find any transactions for supplied filter"
-                log.error(msg)
-                Error(msg).exec()
+            self._submitTRANSACTIONQUERY(window)
         log.debug("_submitRequest returning")
+
+    def _submitTRANSACTIONQUERY(self, window):
+        log.debug("_submitTRANSACTIONQUERY called")
+        # Get selected start and end dates
+        start = window.startInput.selectedDate().toString(Qt.DateFormat.ISODate) + " 00:00:00"
+        end = window.endInput.selectedDate().toString(Qt.DateFormat.ISODate) + " 23:59:59"
+        # Create a filter from the dropdown rows
+        rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
+        reqFilter = {list(row.keys())[0].currentText(): [{"value": val.strip()} for val in
+                                                         list(row.values())[0].text().split(',')] for row in rows}
+        # Remove empty rows from the filter
+        if "" in reqFilter.keys():
+            del reqFilter[""]
+        reqFilter["starttimestamp"] = [{"value": start}]
+        reqFilter["endtimestamp"] = [{"value": end}]
+        response = self.api.makeRequest({
+            "requesttypedescriptions": ["TRANSACTIONQUERY"],
+            "filter": reqFilter
+        })
+        response = response["responses"][0]
+        if response["errorcode"] != "0":
+            errString = f"{response['errorcode']} {response['errormessage']} {response['errordata']}"
+            Error(errString).exec()
+            log.error(errString)
+        elif int(response["found"]) > 0:
+            self.model.clear()
+            self.model.add(response["records"])
+            self.view.clearTable()
+            self.view.populateTable(self.model.getAll())
+            window.close()
+        else:
+            msg = "Didn't find any transactions for supplied filter"
+            log.error(msg)
+            Error(msg).exec()
+        log.debug("_submitTRANSACTIONQUERY returning")
+
