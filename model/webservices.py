@@ -26,6 +26,9 @@ class Webservices:
             "filter": {
                 "starttimestamp": [{"value": str(datetime.datetime.now().date()) + " 00:00:00"}],
                 "endtimestamp": [{"value": str(datetime.datetime.now().date()) + " 23:59:59"}],
+                "requesttypedescription": [
+                    {"value": "AUTH"}, {"value": "REFUND"}, {"value": "THREEDQUERY"}
+                ]
             }
         }
         response = self.makeRequest(request)["responses"][0]

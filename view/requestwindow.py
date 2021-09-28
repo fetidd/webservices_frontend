@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QCalendarWidget, QHBoxLayout, QComboBox, QLineEdit, QPushButton, \
-    QLabel, QWidget
+    QLabel, QWidget, QTableWidget, QTableWidgetItem, QTableView
 from lib.logger import createLogger
 from lib.requesttype import RequestType
 from lib.config import FIELDS
@@ -16,6 +16,7 @@ class RequestWindow(QDialog):
         self.requestType = requestType
         self.transactions = transactions
         self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
         self.rows = []
         if requestType == RequestType.TRANSACTIONQUERY:
             self._setupTransactionQuery()
@@ -48,11 +49,16 @@ class RequestWindow(QDialog):
         row.addWidget(newFieldButton)
         row.addWidget(self.submitButton)
         self.layout.addLayout(row)
-        self.setLayout(self.layout)
 
     def _setupRefund(self):
         log.debug(f"Setting up REFUND window with {len(self.transactions)} transactions")
         if len(self.transactions) <= 1:
+            instructions = """
+            Enter the details of the transaction you wish to refund.
+            Only AUTHS that have settled (settlestatus=100) can be refunded.
+            If you selected one transaction from the main table it will be pre-filled here.
+            """
+            self.layout.addWidget(QLabel(instructions))
             self.requiredInputs = {}
             for field, data in FIELDS.items():
                 if data["req"] & RequestType.REFUND.value:
@@ -69,12 +75,31 @@ class RequestWindow(QDialog):
             self.requiredInputs["requesttypedescriptions"].setText("REFUND")
             self.submitButton = QPushButton("Submit request")
             self.layout.addWidget(self.submitButton)
-            self.setLayout(self.layout)
         else:  # open the batch window with a table of passed-in transactions
+            instructions = """
+            Make sure the transactions in the table are the ones you wish to refund.
+            Only AUTHS that have settled (settlestatus=100) can be refunded.
+            """
+            self.layout.addWidget(QLabel(instructions))
             # Remove transactions that are not AUTHS with settlestatus=100
+            transactions = [t for t in self.transactions if t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100"]
             # Show a table with the remaining transactions, doubleclickable and selectable
-            # submit button makes a queue of refund requests, one for each selected transaction or all if none are selected
-            pass
+            self.resize(600, 400)
+            self.table = QTableWidget(0, 3)
+            self.table.setSelectionBehavior(QTableView.SelectRows)
+            self.table.setHorizontalHeaderLabels(["parenttransactionreference", "baseamount", "customername"])
+            for index, transaction in enumerate(transactions):
+                self.table.insertRow(index)
+                ref = QTableWidgetItem(transaction["transactionreference"])
+                amount = QTableWidgetItem(transaction["baseamount"])
+                customerName = QTableWidgetItem(f"{transaction.get('billingfirstname', '')} {transaction.get('billinglastname', '')}")
+                for i, w in enumerate([ref, amount, customerName]):
+                    w.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+                    self.table.setItem(index, i, w)
+            self.table.resizeColumnsToContents()
+            self.layout.addWidget(self.table)
+            self.submitButton = QPushButton("Submit request")
+            self.layout.addWidget(self.submitButton)
 
     def _setupTransactionUpdate(self):
         log.debug(f"Setting up TRANSACTIONUPDATE window with {len(self.transactions)} transactions")

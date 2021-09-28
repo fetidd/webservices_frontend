@@ -57,7 +57,7 @@ class Controller:
             if int(response["found"]) > 0:
                 log.debug(f"Populating table with {len(response['found'])} transactions")
                 self.model.add(response["records"])
-                self.view.populateTable(self.model.getAll())
+                self.view.table.populate(self.model.getAll())
             self.view.toggleLogin(self.api.loggedIn)
         log.debug("_login returning")
         return
@@ -80,6 +80,8 @@ class Controller:
         window = self.requestWindow
         if window.requestType == RequestType.TRANSACTIONQUERY:
             self._submitTRANSACTIONQUERY(window)
+        elif window.requestType == RequestType.REFUND:
+            self._submitREFUND(window)
         log.debug("_submitRequest returning")
 
     def _submitTRANSACTIONQUERY(self, window):
@@ -127,3 +129,23 @@ class Controller:
 
     def _showTransactionInfo(self, transaction):
         Info(self.model.get(transaction.reference)).exec()
+
+    def _submitREFUND(self, window):
+        responses = []
+        if len(window.transactions) > 1:
+            for t in window.transactions:
+                response = self.api.makeRequest({
+                    "parenttransactionreference": t["transactionreference"],
+                    "requesttypedescriptions": ["REFUND"],
+                    "sitereference": t["sitereference"]
+                })
+                responses.append(response)
+        else:
+            # gather data from the window to submit
+            responses.append(self.api.makeRequest({
+                "parenttransactionreference": window.requiredInputs["parenttransactionreference"].text(),
+                "requesttypedescriptions": ["REFUND"],
+                "sitereference": window.requiredInputs["sitereference"].text()
+            }))
+        # todo: analyse the response(s)
+        window.close()

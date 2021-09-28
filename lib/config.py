@@ -226,8 +226,18 @@ FIELDS = {
     }
 }
 
-tableHeaders = ["transactionstartedtimestamp", "transactionreference", "baseamount", "accounttypedescription",
-                "requesttypedescription", "paymenttypedescription", "maskedpan"]
+tableHeaders = {
+    "Transaction started": "transactionstartedtimestamp",
+    "Reference": "transactionreference",
+    "Amount": "baseamount",
+    "Account type": "accounttypedescription",
+    "Request type": "requesttypedescription",
+    "Payment type": "paymenttypedescription",
+    "Card number": "maskedpan",
+    "Settle status": "settlestatus",
+    "First name": "billingfirstname",
+    "Last name": "billinglastname"
+}
 
 
 def runValidation(field, value):
