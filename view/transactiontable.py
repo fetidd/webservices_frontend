@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QTableWidget, QTableView, QTableWidgetItem
 from lib.config import tableHeaders
 from lib.logger import createLogger
+from view.transactiontableitem import TransactionTableItem
 
 log = createLogger(__name__)
 
@@ -26,7 +27,8 @@ class TransactionTable(QTableWidget):
             col = 0
             # Build each row
             for field in tableHeaders:
-                item = QTableWidgetItem(transaction.get(field, "-"))
+                item = TransactionTableItem(text=transaction.get(field, "-"), ref=transaction["transactionreference"])
+                item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.setItem(row, col, item)
                 col += 1
             row += 1

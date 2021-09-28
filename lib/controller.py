@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLineEdit, QPushButton, QComboBox
+from PySide6.QtWidgets import QLineEdit, QComboBox
 from lib.logger import createLogger
 from view.errordialog import Error
+from view.infowindow import Info
 from view.requestwindow import RequestWindow
 from lib.requesttype import RequestType
 
@@ -23,6 +24,7 @@ class Controller:
         self.view.loginButton.clicked.connect(self._login)
         # Table Section
         self.view.table.itemSelectionChanged.connect(self._selectTransactions)
+        self.view.table.itemDoubleClicked.connect(self._showTransactionInfo)
 
         # Buttons Section
         def connectRequestButton(button):  # Function required due to lazy lambda?
@@ -122,3 +124,6 @@ class Controller:
         for selectedRange in table.selectedRanges():
             for transaction in table.transactions[selectedRange.topRow():selectedRange.bottomRow()+1]:
                 self.selectedTransactions.append(transaction)
+
+    def _showTransactionInfo(self, transaction):
+        Info(self.model.get(transaction.reference)).exec()

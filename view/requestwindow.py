@@ -27,7 +27,7 @@ class RequestWindow(QDialog):
         log.debug("Setting up TRANSACTIONQUERY window")
         instructions = """
         Select a start and end date for the period you wish to query.
-        Click 'New field' to add a row containing a dropdown and input box to specify fields to filter with. 
+        Click 'New field' to add a row containing a dropdown and input box to specify fields to filter by. 
         To add multiple values for the same filter, separate the values with commas.
         """
         self.layout.addWidget(QLabel(instructions))
