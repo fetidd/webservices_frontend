@@ -21,13 +21,14 @@ class Controller:
         log.debug("_connectMainWindowComponents called")
         # Login Section
         self.view.loginButton.clicked.connect(self._login)
-
         # Table Section
+        self.view.table.itemSelectionChanged.connect(self._selectTransactions)
 
         # Buttons Section
         def connectRequestButton(button):  # Function required due to lazy lambda?
             requestType = RequestType[button.text().upper()]
             button.clicked.connect(lambda: self._openRequestWindow(requestType))
+
         for btn in self.view.requestButtons.values():
             connectRequestButton(btn)
         log.debug("_connectMainWindowComponents returning")
@@ -105,8 +106,8 @@ class Controller:
         elif int(response["found"]) > 0:
             self.model.clear()
             self.model.add(response["records"])
-            self.view.clearTable()
-            self.view.populateTable(self.model.getAll())
+            self.view.table.clear()
+            self.view.table.populate(self.model.getAll())
             window.close()
         else:
             msg = "Didn't find any transactions for supplied filter"
@@ -114,3 +115,10 @@ class Controller:
             Error(msg).exec()
         log.debug("_submitTRANSACTIONQUERY returning")
 
+    def _selectTransactions(self):
+        log.debug("selecting transactions")
+        table = self.view.table
+        self.selectedTransactions = []
+        for selectedRange in table.selectedRanges():
+            for transaction in table.transactions[selectedRange.topRow():selectedRange.bottomRow()+1]:
+                self.selectedTransactions.append(transaction)

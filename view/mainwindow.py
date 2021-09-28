@@ -1,9 +1,8 @@
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QMainWindow, QLabel, QPushButton, QLineEdit, QTableWidget, QHBoxLayout, QTableWidgetItem,
+    QMainWindow, QLabel, QPushButton, QLineEdit, QHBoxLayout,
     QVBoxLayout, QWidget)
 from lib.logger import createLogger
-import lib.config as config
+from view.transactiontable import TransactionTable
 
 log = createLogger(__name__)
 
@@ -35,33 +34,8 @@ class WSMain(QMainWindow):
             for i in inputs:
                 i.setDisabled(False)
             button.setText("Login")
-            self.clearTable()
+            self.table.clear()
         log.debug("toggleLogin returning")
-
-    def populateTable(self, transactions):
-        """
-        Fill the table with Transactions.
-        """
-        # clear current
-        log.debug(f"populateTable called with {len(transactions)} transactions")
-        row = 0
-        table = self.table
-        for transaction in sorted(transactions, reverse=True, key=lambda x: x["transactionstartedtimestamp"]):
-            table.insertRow(row)
-            col = 0
-            # Build each row
-            for field in config.tableHeaders:
-                item = QTableWidgetItem(transaction.get(field, "-"))
-                item.setFlags(Qt.ItemFlag.ItemIsEnabled)
-                table.setItem(row, col, item)
-                col += 1
-            row += 1
-        table.resizeColumnsToContents()
-        log.debug("populateTable returning")
-
-    def clearTable(self):
-        self.table.setRowCount(0)
-        log.debug("Table cleared!")
 
     # PRIVATE METHODS-------------------------------------------------------------------------------------------------
     def _configure(self):
@@ -82,28 +56,23 @@ class WSMain(QMainWindow):
         layout = QHBoxLayout()
         userLabel = QLabel("Username")
         passLabel = QLabel("Password")
-        userInput = QLineEdit()
-        passInput = QLineEdit()
+        self.userInput = QLineEdit()
+        self.passInput = QLineEdit()
         # TODO remove this ------------------
-        userInput.setText("ben_webservices")
-        passInput.setText("BenPass123!")
+        self.userInput.setText("ben_webservices")
+        self.passInput.setText("BenPass123!")
         # -----------------------------------
-        loginButton = QPushButton("Login")
-        for w in [userLabel, userInput, passLabel, passInput, loginButton]:
+        self.loginButton = QPushButton("Login")
+        for w in [userLabel, self.userInput, passLabel, self.passInput, self.loginButton]:
             layout.addWidget(w)
         self.layout.addLayout(layout)
-        self.userInput = userInput
-        self.passInput = passInput
-        self.loginButton = loginButton
         log.debug("_addLogin returning")
 
     def _addTable(self):
         """Create and add the transaction table to the main window."""
         log.debug("_addTable called")
         layout = QHBoxLayout()
-        table = QTableWidget(0, len(config.tableHeaders))
-        table.setHorizontalHeaderLabels(config.tableHeaders)
-        table.resizeColumnsToContents()
+        table = TransactionTable()
         layout.addWidget(table)
         self.layout.addLayout(layout)
         self.table = table
