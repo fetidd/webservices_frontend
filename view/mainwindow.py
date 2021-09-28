@@ -58,10 +58,6 @@ class WSMain(QMainWindow):
         passLabel = QLabel("Password")
         self.userInput = QLineEdit()
         self.passInput = QLineEdit()
-        # TODO remove this ------------------
-        self.userInput.setText("ben_webservices")
-        self.passInput.setText("BenPass123!")
-        # -----------------------------------
         self.loginButton = QPushButton("Login")
         for w in [userLabel, self.userInput, passLabel, self.passInput, self.loginButton]:
             layout.addWidget(w)
