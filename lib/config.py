@@ -227,16 +227,16 @@ FIELDS = {
 }
 
 tableHeaders = {
-    "Transaction started": "transactionstartedtimestamp",
-    "Reference": "transactionreference",
-    "Amount": "baseamount",
-    "Account type": "accounttypedescription",
-    "Request type": "requesttypedescription",
-    "Payment type": "paymenttypedescription",
-    "Card number": "maskedpan",
-    "Settle status": "settlestatus",
-    "First name": "billingfirstname",
-    "Last name": "billinglastname"
+    "Transaction started": {"apiField": "transactionstartedtimestamp", "active": True},
+    "Reference": {"apiField": "transactionreference", "active": True},
+    "Amount": {"apiField": "baseamount", "active": True},
+    "Account type": {"apiField": "accounttypedescription", "active": True},
+    "Request type": {"apiField": "requesttypedescription", "active": True},
+    "Payment type": {"apiField": "paymenttypedescription", "active": True},
+    "Card number": {"apiField": "maskedpan", "active": True},
+    "Settle status": {"apiField": "settlestatus", "active": True},
+    "First name": {"apiField": "billingfirstname", "active": True},
+    "Last name": {"apiField": "billinglastname", "active": True},
 }
 
 
