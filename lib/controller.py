@@ -185,6 +185,7 @@ class Controller:
         window.close()
 
     def _analyseResponses(self, responses: list) -> dict:
+        """Expects a list of the inner responses from the outer gateway response."""
         log.debug(f"Analysing {responses}")
         analysis = {res.get("referenceForResult", "NOREF!"): {"response": res, "error": not not int(res.get("errorcode", "ERROR!"))} for res in responses}
         log.debug(f"\t->> {len(analysis.keys())}: {analysis}")
