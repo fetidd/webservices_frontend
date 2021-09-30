@@ -47,9 +47,11 @@ class RequestWindow(QDialog):
         rowLayout.addWidget(self.endInput)
         self.layout.addWidget(row)
         # Add new field and submit buttons
-        cfg.FIELDS = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.TRANSACTIONQUERY.value]
-        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(cfg.FIELDS))
+        fields = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.TRANSACTIONQUERY.value]
+        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(fields))
+        newFieldButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.submitButton = QPushButton("Submit request")
+        self.submitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         row = QHBoxLayout()
         row.addWidget(newFieldButton)
         row.addWidget(self.submitButton)
@@ -104,6 +106,7 @@ class RequestWindow(QDialog):
             self.table.resizeColumnsToContents()
             self.layout.addWidget(self.table)
             self.submitButton = QPushButton("Submit request")
+            self.submitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             self.layout.addWidget(self.submitButton)
 
     def _setupTransactionUpdate(self):
@@ -122,9 +125,11 @@ class RequestWindow(QDialog):
         """
         self.layout.addWidget(QLabel(instructions))
         # Add new field and submit buttons
-        cfg.FIELDS = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.CUSTOM.value]
-        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(cfg.FIELDS))
+        fields = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.CUSTOM.value]
+        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(fields))
+        newFieldButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.submitButton = QPushButton("Submit request")
+        self.submitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         row = QHBoxLayout()
         row.addWidget(newFieldButton)
         row.addWidget(self.submitButton)
@@ -144,6 +149,7 @@ class RequestWindow(QDialog):
         dropdownInput = QLineEdit()
         deleteButton = QPushButton("X", clicked=lambda: self._deleteRow(row))
         deleteButton.setFixedWidth(30)
+        deleteButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         layout.addWidget(dropdown)
         layout.addWidget(dropdownInput)
         layout.addWidget(deleteButton)

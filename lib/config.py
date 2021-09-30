@@ -13,6 +13,7 @@ import re
 from lib.logger import createLogger
 from dotenv import load_dotenv
 import os
+from collections import OrderedDict
 
 load_dotenv()
 log = createLogger(__name__)
@@ -27,7 +28,7 @@ CUSTOM = RequestType.CUSTOM.value
 
 class Config:
     def __init__(self):
-        self.HEADERS = {
+        self.HEADERS = OrderedDict({
             "Transaction started": {"apiField": "transactionstartedtimestamp", "active": True},
             "Reference": {"apiField": "transactionreference", "active": True},
             "Request type": {"apiField": "requesttypedescription", "active": True},
@@ -41,8 +42,8 @@ class Config:
             "Merchant name": {"apiField": "merchantname", "active": True},
             "Site reference": {"apiField": "sitereference", "active": True},
             "Operator": {"apiField": "operatorname", "active": True},
-        }
-        self.FIELDS = {
+        })
+        self.FIELDS = OrderedDict({
             "accounttypedescription": {
                 "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
                 "inc": QUERY | AUTH | CUSTOM,
@@ -219,7 +220,13 @@ class Config:
                 "inc": UPDATE | CUSTOM,
                 "req": NONE,
             }
-        }
+        })
+
+    def toggleHeader(self, header: str):
+        try:
+            self.HEADERS[header]["active"] = not self.HEADERS[header]["active"]
+        except Exception as e:
+            log.error("Header label does not exist")
 
     def runValidation(self, field, value):
         result = False

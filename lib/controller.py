@@ -147,7 +147,6 @@ class Controller:
             })
             response["referenceForResult"] = window.requiredInputs["parenttransactionreference"].text()
             responses.append(response)
-        window.close()
         ResponseWindow(self._analyseResponses(responses)).exec()
 
     def _submitCUSTOM(self, window):
@@ -169,7 +168,6 @@ class Controller:
         for response in gatewayResponse["responses"]:
             response["referenceForResult"] = response.get("transactionreference", "ERROR!")
             responses.append(response)
-        window.close()
         ResponseWindow(self._analyseResponses(responses)).exec()
 
     def _analyseResponses(self, responses: list) -> dict:
