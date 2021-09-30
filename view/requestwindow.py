@@ -3,9 +3,10 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QCalendarWidget, QHBoxLayout
     QLabel, QWidget, QTableWidget, QTableWidgetItem, QTableView
 from lib.logger import createLogger
 from lib.requesttype import RequestType
-from lib.config import FIELDS
+from lib.config import Config
 log = createLogger(__name__)
 
+cfg = Config()
 
 # noinspection PyArgumentList
 class RequestWindow(QDialog):
@@ -32,7 +33,7 @@ class RequestWindow(QDialog):
         log.debug("Setting up TRANSACTIONQUERY window")
         instructions = """
         Select a start and end date for the period you wish to query.
-        Click 'New field' to add a row containing a dropdown and input box to specify fields to filter by. 
+        Click 'New field' to add a row containing a dropdown and input box to specify cfg.FIELDS to filter by. 
         To add multiple values for the same filter, separate the values with commas.
         """
         self.layout.addWidget(QLabel(instructions))
@@ -46,8 +47,8 @@ class RequestWindow(QDialog):
         rowLayout.addWidget(self.endInput)
         self.layout.addWidget(row)
         # Add new field and submit buttons
-        fields = [field for field, data in FIELDS.items() if data["inc"] & RequestType.TRANSACTIONQUERY.value]
-        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(fields))
+        cfg.FIELDS = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.TRANSACTIONQUERY.value]
+        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(cfg.FIELDS))
         self.submitButton = QPushButton("Submit request")
         row = QHBoxLayout()
         row.addWidget(newFieldButton)
@@ -64,7 +65,7 @@ class RequestWindow(QDialog):
             """
             self.layout.addWidget(QLabel(instructions))
             self.requiredInputs = {}
-            for field, data in FIELDS.items():
+            for field, data in cfg.FIELDS.items():
                 if data["req"] & RequestType.REFUND.value:
                     row = QHBoxLayout()
                     fieldInput = QLineEdit()
@@ -116,13 +117,13 @@ class RequestWindow(QDialog):
         log.debug("Setting up CUSTOM window")
         instructions = """
         Click 'New field' to add a row containing a dropdown and input box to enter a value for the field.
-        When submitting you must ensure the fields and values follow the specification for the requesttype as shown in the docs. 
+        When submitting you must ensure the cfg.FIELDS and values follow the specification for the requesttype as shown in the docs. 
         To add multiple values for the same field, separate the values with commas.
         """
         self.layout.addWidget(QLabel(instructions))
         # Add new field and submit buttons
-        fields = [field for field, data in FIELDS.items() if data["inc"] & RequestType.CUSTOM.value]
-        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(fields))
+        cfg.FIELDS = [field for field, data in cfg.FIELDS.items() if data["inc"] & RequestType.CUSTOM.value]
+        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(cfg.FIELDS))
         self.submitButton = QPushButton("Submit request")
         row = QHBoxLayout()
         row.addWidget(newFieldButton)
