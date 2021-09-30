@@ -126,17 +126,6 @@ class Controller:
             Error(msg).exec()
         log.debug("_submitTRANSACTIONQUERY returning")
 
-    def _selectTransactions(self):
-        log.debug("selecting transactions")
-        table = self.view.table
-        self.selectedTransactions = []
-        for selectedRange in table.selectedRanges():
-            for transaction in table.transactions[selectedRange.topRow():selectedRange.bottomRow()+1]:
-                self.selectedTransactions.append(transaction)
-
-    def _showTransactionInfo(self, transaction):
-        Info(self.model.get(transaction.reference)).exec()
-
     def _submitREFUND(self, window):
         responses = []
         if len(window.transactions) > 1:
@@ -158,9 +147,8 @@ class Controller:
             })
             response["referenceForResult"] = window.requiredInputs["parenttransactionreference"].text()
             responses.append(response)
-        # todo: analyse the response(s)
-        ResponseWindow(self._analyseResponses(responses)).exec()
         window.close()
+        ResponseWindow(self._analyseResponses(responses)).exec()
 
     def _submitCUSTOM(self, window):
         # Build a request object from the inputted data
@@ -181,8 +169,8 @@ class Controller:
         for response in gatewayResponse["responses"]:
             response["referenceForResult"] = response.get("transactionreference", "ERROR!")
             responses.append(response)
-        ResponseWindow(self._analyseResponses(responses)).exec()
         window.close()
+        ResponseWindow(self._analyseResponses(responses)).exec()
 
     def _analyseResponses(self, responses: list) -> dict:
         """Expects a list of the inner responses from the outer gateway response."""
@@ -190,4 +178,15 @@ class Controller:
         analysis = {res.get("referenceForResult", "NOREF!"): {"response": res, "error": not not int(res.get("errorcode", "ERROR!"))} for res in responses}
         log.debug(f"\t->> {len(analysis.keys())}: {analysis}")
         return analysis
+
+    def _selectTransactions(self):
+        log.debug("selecting transactions")
+        table = self.view.table
+        self.selectedTransactions = []
+        for selectedRange in table.selectedRanges():
+            for transaction in table.transactions[selectedRange.topRow():selectedRange.bottomRow()+1]:
+                self.selectedTransactions.append(transaction)
+
+    def _showTransactionInfo(self, transaction):
+        Info(self.model.get(transaction.reference)).exec()
 

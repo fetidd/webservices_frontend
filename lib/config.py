@@ -25,24 +25,15 @@ CHECK = RequestType.ACCOUNTCHECK.value
 NONE = RequestType.NONE.value
 CUSTOM = RequestType.CUSTOM.value
 
-
-def validateDateTime(datetime):
-    return not not re.fullmatch(  # not not returns True rather than the match object
-        "[12]{1}[0-9]{3}-(01|02|03|04|05|06|07|08|09|10|11|12)-([012]{1}[0-9]{1}|30|31)\s([01]{1}[0-9]{1}|20|21|22|23)(:[0-5]{1}[0-9]{1}){2}",
-        datetime
-    )
-
-
+# Field validation functions
 def validateBaseamount(amount):
     return not not re.fullmatch(  # not not returns True rather than the match object
         "[1-9]+[0-9]*",
         amount
     )
 
-
 def validateEmail(email):
     return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
-
 
 def validateIP(ip):
     return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)
@@ -230,14 +221,17 @@ FIELDS = {
 tableHeaders = {
     "Transaction started": {"apiField": "transactionstartedtimestamp", "active": True},
     "Reference": {"apiField": "transactionreference", "active": True},
-    "Amount": {"apiField": "baseamount", "active": True},
-    "Account type": {"apiField": "accounttypedescription", "active": True},
     "Request type": {"apiField": "requesttypedescription", "active": True},
+    "Account type": {"apiField": "accounttypedescription", "active": True},
+    "Settle status": {"apiField": "settlestatus", "active": True},
+    "Amount": {"apiField": "baseamount", "active": True},
     "Payment type": {"apiField": "paymenttypedescription", "active": True},
     "Card number": {"apiField": "maskedpan", "active": True},
-    "Settle status": {"apiField": "settlestatus", "active": True},
     "First name": {"apiField": "billingfirstname", "active": True},
     "Last name": {"apiField": "billinglastname", "active": True},
+    "Merchant name": {"apiField": "merchantname", "active": True},
+    "Site reference": {"apiField": "sitereference", "active": True},
+    "Operator": {"apiField": "operatorname", "active": True},
 }
 
 
