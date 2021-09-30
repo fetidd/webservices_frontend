@@ -92,3 +92,5 @@ class WSMain(QMainWindow):
             layout.addWidget(btn)
         self.layout.addLayout(layout)
         log.debug("_addButtons returning")
+
+    
