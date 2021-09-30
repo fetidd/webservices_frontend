@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QLineEdit, QComboBox
 from lib.logger import createLogger
 from view.errordialog import Error
 from view.infowindow import Info
+from view.responsewindow import ResponseWindow
 from view.requestwindow import RequestWindow
 from lib.requesttype import RequestType
 
@@ -67,9 +68,13 @@ class Controller:
         if not self.api.loggedIn:
             Error("Not logged in!").exec()
             return
-        if self.requestWindow is not None:
+        if self.requestWindow is not None:  # This should never happen 
             raise Exception("There is already a request window open!")
-        self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
+        try:
+            self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
+        except Exception as e:  # If the request has not been written
+            Error(e).exec()
+            return
         self.requestWindow.submitButton.clicked.connect(self._submitRequest)
         self.requestWindow.exec()
         self.requestWindow = None
@@ -82,6 +87,8 @@ class Controller:
             self._submitTRANSACTIONQUERY(window)
         elif window.requestType == RequestType.REFUND:
             self._submitREFUND(window)
+        elif window.requestType == RequestType.CUSTOM:
+            self._submitCUSTOM(window)
         log.debug("_submitRequest returning")
 
     def _submitTRANSACTIONQUERY(self, window):
@@ -148,4 +155,23 @@ class Controller:
                 "sitereference": window.requiredInputs["sitereference"].text()
             }))
         # todo: analyse the response(s)
+        
+
         window.close()
+
+    def _submitCUSTOM(self, window):
+        # Build a request object from the inputted data
+        request = {}
+        rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
+        for row in rows:
+            if list(row.keys())[0].currentText() == "requesttypedescriptions":
+                # create the requesttypedescriptions list from comma separated input
+                request["requesttypedescriptions"] = [reqType.strip() for reqType in list(row.values())[0].text().split(',')]
+            else:
+                request[list(row.keys())[0].currentText()] = list(row.values())[0].text()
+        # Remove empty rows from the filter
+        if "" in request.keys():
+            del request[""]
+        # make the request
+        response = self.api.makeRequest(request)
+        ResponseWindow(response).exec()

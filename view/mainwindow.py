@@ -1,9 +1,13 @@
+from lib.requesttype import RequestType
 from PySide6.QtWidgets import (
     QMainWindow, QLabel, QPushButton, QLineEdit, QHBoxLayout,
     QVBoxLayout, QWidget)
 from lib.logger import createLogger
 from view.transactiontable import TransactionTable
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 log = createLogger(__name__)
 
 
@@ -57,7 +61,9 @@ class WSMain(QMainWindow):
         userLabel = QLabel("Username")
         passLabel = QLabel("Password")
         self.userInput = QLineEdit()
+        self.userInput.setText(os.environ.get("WS_USERNAME", ""))
         self.passInput = QLineEdit()
+        self.passInput.setText(os.environ.get("WS_PASSWORD", ""))
         self.loginButton = QPushButton("Login")
         for w in [userLabel, self.userInput, passLabel, self.passInput, self.loginButton]:
             layout.addWidget(w)
@@ -78,10 +84,10 @@ class WSMain(QMainWindow):
         """Create and add the button section to the main window."""
         log.debug("_addButtons called")
         layout = QHBoxLayout()
-        buttons = ["transactionquery", "refund"]
+        buttons = [rt.name for rt in RequestType if rt.name != "NONE"]
         self.requestButtons = {}
         for b in buttons:
-            btn = QPushButton(b.upper())
+            btn = QPushButton(b)
             self.requestButtons[b] = btn
             layout.addWidget(btn)
         self.layout.addLayout(layout)

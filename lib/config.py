@@ -23,6 +23,7 @@ UPDATE = RequestType.TRANSACTIONUPDATE.value
 REFUND = RequestType.REFUND.value
 CHECK = RequestType.ACCOUNTCHECK.value
 NONE = RequestType.NONE.value
+CUSTOM = RequestType.CUSTOM.value
 
 
 def validateDateTime(datetime):
@@ -50,61 +51,61 @@ def validateIP(ip):
 FIELDS = {
     "accounttypedescription": {
         "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
-        "inc": QUERY | AUTH,
+        "inc": QUERY | AUTH | CUSTOM,
         "req": AUTH
     },
     "billingemail": {
         "val": validateEmail,
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "billingfirstname": {
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "billinglastname": {
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "billingpostcode": {
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "billingpremise": {
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "billingstreet": {
-        "inc": QUERY,
+        "inc": QUERY | CUSTOM,
         "req": NONE
     },
     "currencyiso3a": {
-        "inc": QUERY | AUTH,
+        "inc": QUERY | AUTH | CUSTOM,
         "req": AUTH
     },
     "customerip": {
-        "inc": QUERY | AUTH,
+        "inc": QUERY | AUTH | CUSTOM,
         "req": NONE,
         "val": validateIP
     },
     "orderreference": {
-        "inc": QUERY | AUTH | REFUND | UPDATE,
+        "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
         "req": NONE
     },
     "pan": {
-        "inc": QUERY | AUTH,
+        "inc": QUERY | AUTH | CUSTOM,
         "req": AUTH,
     },
     "parenttransactionreference": {
-        "inc": QUERY | AUTH | REFUND,
+        "inc": QUERY | AUTH | REFUND | CUSTOM,
         "req": REFUND
     },
     "paymenttypedescriptions": {
-        "inc": QUERY | AUTH,
+        "inc": QUERY | AUTH | CUSTOM,
         "req": NONE
     },
     "requesttypedescriptions": {
-        "inc": AUTH | REFUND | UPDATE | CHECK,
+        "inc": AUTH | REFUND | UPDATE | CHECK | CUSTOM,
         "req": AUTH | REFUND | UPDATE | CHECK
     },
     "requesttypedescription": {
@@ -112,116 +113,116 @@ FIELDS = {
         "req": NONE
     },
     "sitereference": {
-        "inc": QUERY | AUTH | REFUND | UPDATE,
+        "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
         "req": AUTH | REFUND | UPDATE
     },
     "transactionreference": {
-        "inc": QUERY | UPDATE,
+        "inc": QUERY | UPDATE | CUSTOM,
         "req": UPDATE
     },
     "authmethod": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "credentialsonfile": {
-        "inc": AUTH | CHECK,
+        "inc": AUTH | CHECK | CUSTOM,
         "req": CHECK
     },
     "initiationreason": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "baseamount": {
-        "inc": AUTH | REFUND,
+        "inc": AUTH | REFUND | CUSTOM,
         "req": AUTH
     },
     "expirydate": {
-        "inc": AUTH | REFUND,
+        "inc": AUTH | REFUND | CUSTOM,
         "req": AUTH
     },
     "securitycode": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "chargedescription": {
-        "inc": AUTH | REFUND,
+        "inc": AUTH | REFUND | CUSTOM,
         "req": NONE
     },
     "merchantemail": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "operatorname": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerstreet": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customertown": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customercounty": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customercountryiso2a": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerpostcode": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customeremail": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customertelephonetype": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customertelephone": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerprefixname": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerfirstname": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customermiddlename": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerlastname": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customersuffixname": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE
     },
     "customerforwardedip": {
-        "inc": AUTH,
+        "inc": AUTH | CUSTOM,
         "req": NONE,
         "val": validateIP
     },
     "settleduedate": {
-        "inc": AUTH | UPDATE,
+        "inc": AUTH | UPDATE | CUSTOM,
         "req": NONE,
     },
     "settlestatus": {
-        "inc": AUTH | UPDATE,
+        "inc": AUTH | UPDATE | CUSTOM,
         "req": NONE,
     },
     "settlebaseamount": {
-        "inc": UPDATE,
+        "inc": UPDATE | CUSTOM,
         "req": NONE,
     }
 }

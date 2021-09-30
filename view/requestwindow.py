@@ -22,6 +22,10 @@ class RequestWindow(QDialog):
             self._setupTransactionQuery()
         elif requestType == RequestType.REFUND:
             self._setupRefund()
+        elif requestType == RequestType.CUSTOM:
+            self._setupCustom()
+        else:
+            raise Exception("This request is not written yet.")
 
     # PRIVATE METHODS ------------------------------------------------------------------------------------------------
     def _setupTransactionQuery(self):
@@ -108,6 +112,23 @@ class RequestWindow(QDialog):
         else:
             pass
 
+    def _setupCustom(self):
+        log.debug("Setting up CUSTOM window")
+        instructions = """
+        Click 'New field' to add a row containing a dropdown and input box to enter a value for the field.
+        When submitting you must ensure the fields and values follow the specification for the requesttype as shown in the docs. 
+        To add multiple values for the same field, separate the values with commas.
+        """
+        self.layout.addWidget(QLabel(instructions))
+        # Add new field and submit buttons
+        fields = [field for field, data in FIELDS.items() if data["inc"] & RequestType.CUSTOM.value]
+        newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(fields))
+        self.submitButton = QPushButton("Submit request")
+        row = QHBoxLayout()
+        row.addWidget(newFieldButton)
+        row.addWidget(self.submitButton)
+        self.layout.addLayout(row)
+
     def _addDropdownRow(self, fields):
         rowCount = len(self.findChildren(QWidget, options=Qt.FindDirectChildrenOnly))
         row = QWidget(parent=self, objectName="requestRow")
@@ -117,15 +138,15 @@ class RequestWindow(QDialog):
         row.setLayout(layout)
         dropdown = QComboBox()
         dropdown.insertItem(0, "")
-        for i, field in enumerate(fields):
-            dropdown.insertItem(i, field)
+        for i, field in enumerate(sorted(fields)):
+            dropdown.insertItem(i+1, field)
         dropdownInput = QLineEdit()
         deleteButton = QPushButton("X", clicked=lambda: self._deleteRow(row))
         deleteButton.setFixedWidth(30)
         layout.addWidget(dropdown)
         layout.addWidget(dropdownInput)
         layout.addWidget(deleteButton)
-        self.layout.insertWidget(rowCount-2, row)
+        self.layout.insertWidget(rowCount-1, row)
         self.rows.append(row)
         log.debug(f"Added new row")
 
