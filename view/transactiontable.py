@@ -1,11 +1,11 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTableWidget, QTableView, QTableWidgetItem
-from lib.config import tableHeaders
+from PySide6.QtWidgets import QTableWidget, QTableView
+from lib.config import Config
 from lib.logger import createLogger
 from view.transactiontableitem import TransactionTableItem
 
 log = createLogger(__name__)
-
+cfg = Config()
 
 class TransactionTable(QTableWidget):
     def __init__(self):
@@ -16,7 +16,7 @@ class TransactionTable(QTableWidget):
         self.transactions = []
 
     def _setupTable(self):
-        headers = [h for h,d in tableHeaders.items() if d["active"] == True]
+        headers = [h for h,d in cfg.HEADERS.items() if d["active"] == True]
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
@@ -30,7 +30,7 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for data in tableHeaders.values():
+            for data in cfg.HEADERS.values():
                 if data["active"] == True:
                     text = transaction.get(data["apiField"], "")
                     if data["apiField"] == "baseamount":
