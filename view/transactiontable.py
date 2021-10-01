@@ -17,7 +17,7 @@ class TransactionTable(QTableWidget):
         self.transactions = []
 
     def _setupTable(self):
-        headers = [h for h,d in cfg.HEADERS.items() if d["active"] == True]
+        headers = [h for h, d in cfg.HEADERS.items() if d["active"]]
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
