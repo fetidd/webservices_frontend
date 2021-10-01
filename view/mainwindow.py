@@ -84,7 +84,7 @@ class WSMain(QMainWindow):
         """Create and add the button section to the main window."""
         log.debug("_addButtons called")
         layout = QHBoxLayout()
-        buttons = [rt.name for rt in RequestType if rt.name != "NONE"]
+        buttons = [rt.name for rt in RequestType if rt.name not in ["NONE", "TRANSACTIONUPDATE", "AUTH", "ACCOUNTCHECK"]]
         self.requestButtons = {}
         for b in buttons:
             btn = QPushButton(b)
