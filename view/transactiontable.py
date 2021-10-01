@@ -7,6 +7,7 @@ from view.transactiontableitem import TransactionTableItem
 log = createLogger(__name__)
 cfg = Config()
 
+
 class TransactionTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 0)
@@ -31,7 +32,7 @@ class TransactionTable(QTableWidget):
             col = 0
             # Build each row
             for data in cfg.HEADERS.values():
-                if data["active"] == True:
+                if data["active"]:
                     text = transaction.get(data["apiField"], "")
                     if data["apiField"] == "baseamount":
                         text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"

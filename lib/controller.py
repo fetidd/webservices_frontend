@@ -130,14 +130,15 @@ class Controller:
         responses = []
         if len(window.transactions) > 1:
             for t in window.transactions:
-                gatewayResponse = self.api.makeRequest({
-                    "parenttransactionreference": t["transactionreference"],
-                    "requesttypedescriptions": ["REFUND"],
-                    "sitereference": t["sitereference"]
-                })
-                response = gatewayResponse["responses"][0]
-                response["referenceForResult"] = t["transactionreference"]
-                responses += (gatewayResponse["responses"])
+                if t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100":
+                    gatewayResponse = self.api.makeRequest({
+                        "parenttransactionreference": t["transactionreference"],
+                        "requesttypedescriptions": ["REFUND"],
+                        "sitereference": t["sitereference"]
+                    })
+                    response = gatewayResponse["responses"][0]
+                    response["referenceForResult"] = t["transactionreference"]
+                    responses += (gatewayResponse["responses"])
         else:
             # gather data from the window to submit
             response = self.api.makeRequest({

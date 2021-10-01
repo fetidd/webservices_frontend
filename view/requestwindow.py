@@ -4,9 +4,11 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QCalendarWidget, QHBoxLayout
 from lib.logger import createLogger
 from lib.requesttype import RequestType
 from lib.config import Config
+
 log = createLogger(__name__)
 
 cfg = Config()
+
 
 # noinspection PyArgumentList
 class RequestWindow(QDialog):
@@ -22,7 +24,10 @@ class RequestWindow(QDialog):
         if requestType == RequestType.TRANSACTIONQUERY:
             self._setupTransactionQuery()
         elif requestType == RequestType.REFUND:
-            self._setupRefund()
+            try:
+                self._setupRefund()
+            except Exception:
+                raise
         elif requestType == RequestType.CUSTOM:
             self._setupCustom()
         else:
@@ -77,6 +82,8 @@ class RequestWindow(QDialog):
                     self.layout.addLayout(row)
             if len(self.transactions) == 1:
                 transaction = self.transactions[0]
+                if transaction["requesttypedescription"] != "AUTH" or transaction["settlestatus"] != "100":
+                    raise Exception("Can only refund AUTHs that have settled (100)")
                 self.requiredInputs["parenttransactionreference"].setText(transaction["transactionreference"])
                 self.requiredInputs["sitereference"].setText(transaction["sitereference"])
             self.requiredInputs["requesttypedescriptions"].setText("REFUND")
@@ -89,7 +96,8 @@ class RequestWindow(QDialog):
             """
             self.layout.addWidget(QLabel(instructions))
             # Remove transactions that are not AUTHS with settlestatus=100
-            transactions = [t for t in self.transactions if t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100"]
+            transactions = [t for t in self.transactions if
+                            t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100"]
             # Show a table with the remaining transactions, doubleclickable and selectable
             self.resize(600, 400)
             self.table = QTableWidget(0, 3)
@@ -99,7 +107,8 @@ class RequestWindow(QDialog):
                 self.table.insertRow(index)
                 ref = QTableWidgetItem(transaction["transactionreference"])
                 amount = QTableWidgetItem(transaction["baseamount"])
-                customerName = QTableWidgetItem(f"{transaction.get('billingfirstname', '')} {transaction.get('billinglastname', '')}")
+                customerName = QTableWidgetItem(
+                    f"{transaction.get('billingfirstname', '')} {transaction.get('billinglastname', '')}")
                 for i, w in enumerate([ref, amount, customerName]):
                     w.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                     self.table.setItem(index, i, w)
@@ -145,7 +154,7 @@ class RequestWindow(QDialog):
         dropdown = QComboBox()
         dropdown.insertItem(0, "")
         for i, field in enumerate(sorted(fields)):
-            dropdown.insertItem(i+1, field)
+            dropdown.insertItem(i + 1, field)
         dropdownInput = QLineEdit()
         deleteButton = QPushButton("X", clicked=lambda: self._deleteRow(row))
         deleteButton.setFixedWidth(30)
@@ -153,7 +162,7 @@ class RequestWindow(QDialog):
         layout.addWidget(dropdown)
         layout.addWidget(dropdownInput)
         layout.addWidget(deleteButton)
-        self.layout.insertWidget(rowCount-1, row)
+        self.layout.insertWidget(rowCount - 1, row)
         self.rows.append(row)
         log.debug(f"Added new row")
 
