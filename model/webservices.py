@@ -44,7 +44,7 @@ class Webservices:
     def makeRequest(self, request: dict) -> dict:
         log.debug("Making a new request:")
         log.debug("\t--> " + str(request))
-        isMultiRequest = True if len(request["requesttypedescriptions"]) > 1 else False
+        # isMultiRequest = True if len(request["requesttypedescriptions"]) > 1 else False
         # Send request to Trust Payments Webservices API
         response = self._send(request)
         log.debug("\t<-- " + str(response))

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QLineEdit, QComboBox
 from lib.logger import createLogger
 from view.errordialog import Error
 from view.infowindow import Info
+from view.responsewindow import ResponseWindow
 from view.requestwindow import RequestWindow
 from lib.requesttype import RequestType
 
@@ -67,9 +68,14 @@ class Controller:
         if not self.api.loggedIn:
             Error("Not logged in!").exec()
             return
-        if self.requestWindow is not None:
+        if self.requestWindow is not None:  # This should never happen 
             raise Exception("There is already a request window open!")
-        self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
+        try:
+            self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
+        except Exception as e:  # If the request has not been written
+            log.error(e)
+            Error(e).exec()
+            return
         self.requestWindow.submitButton.clicked.connect(self._submitRequest)
         self.requestWindow.exec()
         self.requestWindow = None
@@ -82,6 +88,8 @@ class Controller:
             self._submitTRANSACTIONQUERY(window)
         elif window.requestType == RequestType.REFUND:
             self._submitREFUND(window)
+        elif window.requestType == RequestType.CUSTOM:
+            self._submitCUSTOM(window)
         log.debug("_submitRequest returning")
 
     def _submitTRANSACTIONQUERY(self, window):
@@ -119,6 +127,58 @@ class Controller:
             Error(msg).exec()
         log.debug("_submitTRANSACTIONQUERY returning")
 
+    def _submitREFUND(self, window):
+        responses = []
+        if len(window.transactions) > 1:
+            for t in window.transactions:
+                if t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100":
+                    gatewayResponse = self.api.makeRequest({
+                        "parenttransactionreference": t["transactionreference"],
+                        "requesttypedescriptions": ["REFUND"],
+                        "sitereference": t["sitereference"]
+                    })
+                    response = gatewayResponse["responses"][0]
+                    response["referenceForResult"] = t["transactionreference"]
+                    responses += (gatewayResponse["responses"])
+        else:
+            # gather data from the window to submit
+            response = self.api.makeRequest({
+                "parenttransactionreference": window.requiredInputs["parenttransactionreference"].text(),
+                "requesttypedescriptions": ["REFUND"],
+                "sitereference": window.requiredInputs["sitereference"].text()
+            })
+            response["referenceForResult"] = window.requiredInputs["parenttransactionreference"].text()
+            responses.append(response)
+        ResponseWindow(self._analyseResponses(responses)).exec()
+
+    def _submitCUSTOM(self, window):
+        # Build a request object from the inputted data
+        request = {}
+        rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
+        for row in rows:
+            if list(row.keys())[0].currentText() == "requesttypedescriptions":
+                # create the requesttypedescriptions list from comma separated input
+                request["requesttypedescriptions"] = [reqType.strip() for reqType in list(row.values())[0].text().split(',')]
+            else:
+                request[list(row.keys())[0].currentText()] = list(row.values())[0].text()
+        # Remove empty rows from the filter
+        if "" in request.keys():
+            del request[""]
+        # make the request
+        gatewayResponse = self.api.makeRequest(request)
+        responses = []
+        for response in gatewayResponse["responses"]:
+            response["referenceForResult"] = response.get("transactionreference", "ERROR!")
+            responses.append(response)
+        ResponseWindow(self._analyseResponses(responses)).exec()
+
+    def _analyseResponses(self, responses: list) -> dict:
+        """Expects a list of the inner responses from the outer gateway response."""
+        log.debug(f"Analysing {responses}")
+        analysis = {res.get("referenceForResult", "NOREF!"): {"response": res, "error": not not int(res.get("errorcode", "ERROR!"))} for res in responses}
+        log.debug(f"\t->> {len(analysis.keys())}: {analysis}")
+        return analysis
+
     def _selectTransactions(self):
         log.debug("selecting transactions")
         table = self.view.table
@@ -130,22 +190,3 @@ class Controller:
     def _showTransactionInfo(self, transaction):
         Info(self.model.get(transaction.reference)).exec()
 
-    def _submitREFUND(self, window):
-        responses = []
-        if len(window.transactions) > 1:
-            for t in window.transactions:
-                response = self.api.makeRequest({
-                    "parenttransactionreference": t["transactionreference"],
-                    "requesttypedescriptions": ["REFUND"],
-                    "sitereference": t["sitereference"]
-                })
-                responses.append(response)
-        else:
-            # gather data from the window to submit
-            responses.append(self.api.makeRequest({
-                "parenttransactionreference": window.requiredInputs["parenttransactionreference"].text(),
-                "requesttypedescriptions": ["REFUND"],
-                "sitereference": window.requiredInputs["sitereference"].text()
-            }))
-        # todo: analyse the response(s)
-        window.close()

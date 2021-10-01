@@ -1,19 +1,25 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTableWidget, QTableView, QTableWidgetItem
-from lib.config import tableHeaders
+from PySide6.QtWidgets import QTableWidget, QTableView
+from lib.config import Config
 from lib.logger import createLogger
 from view.transactiontableitem import TransactionTableItem
 
 log = createLogger(__name__)
+cfg = Config()
 
 
 class TransactionTable(QTableWidget):
     def __init__(self):
-        super().__init__(0, len(tableHeaders.keys()))
-        self.setHorizontalHeaderLabels(tableHeaders)
+        super().__init__(0, 0)
+        self._setupTable()
         self.resizeColumnsToContents()
         self.setSelectionBehavior(QTableView.SelectRows)
         self.transactions = []
+
+    def _setupTable(self):
+        headers = [h for h,d in cfg.HEADERS.items() if d["active"] == True]
+        self.setColumnCount(len(headers))
+        self.setHorizontalHeaderLabels(headers)
 
     def populate(self, transactions):
         """
@@ -25,16 +31,17 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for label, field in tableHeaders.items():
-                text = transaction.get(field, "")
-                if field == "baseamount":
-                    text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"
-                item = TransactionTableItem(text=text, ref=transaction["transactionreference"])
-                if field == "settlestatus":
-                    item.applyStatusColor(text)
-                item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-                self.setItem(row, col, item)
-                col += 1
+            for data in cfg.HEADERS.values():
+                if data["active"]:
+                    text = transaction.get(data["apiField"], "")
+                    if data["apiField"] == "baseamount":
+                        text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"
+                    item = TransactionTableItem(text=text, ref=transaction["transactionreference"])
+                    if data["apiField"] == "settlestatus":
+                        item.applyStatusColor(text)
+                    item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+                    self.setItem(row, col, item)
+                    col += 1
             row += 1
             self.transactions.append(transaction)
         self.resizeColumnsToContents()

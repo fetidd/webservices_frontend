@@ -13,6 +13,7 @@ import re
 from lib.logger import createLogger
 from dotenv import load_dotenv
 import os
+from collections import OrderedDict
 
 load_dotenv()
 log = createLogger(__name__)
@@ -23,227 +24,221 @@ UPDATE = RequestType.TRANSACTIONUPDATE.value
 REFUND = RequestType.REFUND.value
 CHECK = RequestType.ACCOUNTCHECK.value
 NONE = RequestType.NONE.value
+CUSTOM = RequestType.CUSTOM.value
+
+class Config:
+    def __init__(self):
+        self.HEADERS = OrderedDict({
+            "Transaction started": {"apiField": "transactionstartedtimestamp", "active": True},
+            "Reference": {"apiField": "transactionreference", "active": True},
+            "Request type": {"apiField": "requesttypedescription", "active": True},
+            "Account type": {"apiField": "accounttypedescription", "active": True},
+            "Settle status": {"apiField": "settlestatus", "active": True},
+            "Amount": {"apiField": "baseamount", "active": True},
+            "Payment type": {"apiField": "paymenttypedescription", "active": True},
+            "Card number": {"apiField": "maskedpan", "active": True},
+            "First name": {"apiField": "billingfirstname", "active": True},
+            "Last name": {"apiField": "billinglastname", "active": True},
+            "Merchant name": {"apiField": "merchantname", "active": True},
+            "Site reference": {"apiField": "sitereference", "active": True},
+            "Operator": {"apiField": "operatorname", "active": True},
+        })
+        self.FIELDS = OrderedDict({
+            "accounttypedescription": {
+                "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
+                "inc": QUERY | AUTH | CUSTOM,
+                "req": AUTH
+            },
+            "billingemail": {
+                "val": self.validateEmail,
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "billingfirstname": {
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "billinglastname": {
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "billingpostcode": {
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "billingpremise": {
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "billingstreet": {
+                "inc": QUERY | CUSTOM,
+                "req": NONE
+            },
+            "currencyiso3a": {
+                "inc": QUERY | AUTH | CUSTOM,
+                "req": AUTH
+            },
+            "customerip": {
+                "inc": QUERY | AUTH | CUSTOM,
+                "req": NONE,
+                "val": self.validateIP
+            },
+            "orderreference": {
+                "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
+                "req": NONE
+            },
+            "pan": {
+                "inc": QUERY | AUTH | CUSTOM,
+                "req": AUTH,
+            },
+            "parenttransactionreference": {
+                "inc": QUERY | AUTH | REFUND | CUSTOM,
+                "req": REFUND
+            },
+            "paymenttypedescriptions": {
+                "inc": QUERY | AUTH | CUSTOM,
+                "req": NONE
+            },
+            "requesttypedescriptions": {
+                "inc": AUTH | REFUND | UPDATE | CHECK | CUSTOM,
+                "req": AUTH | REFUND | UPDATE | CHECK
+            },
+            "requesttypedescription": {
+                "inc": QUERY,
+                "req": NONE
+            },
+            "sitereference": {
+                "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
+                "req": AUTH | REFUND | UPDATE
+            },
+            "transactionreference": {
+                "inc": QUERY | UPDATE | CUSTOM,
+                "req": UPDATE
+            },
+            "authmethod": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "credentialsonfile": {
+                "inc": AUTH | CHECK | CUSTOM,
+                "req": CHECK
+            },
+            "initiationreason": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "baseamount": {
+                "inc": AUTH | REFUND | CUSTOM,
+                "req": AUTH
+            },
+            "expirydate": {
+                "inc": AUTH | REFUND | CUSTOM,
+                "req": AUTH
+            },
+            "securitycode": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "chargedescription": {
+                "inc": AUTH | REFUND | CUSTOM,
+                "req": NONE
+            },
+            "merchantemail": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "operatorname": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerstreet": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customertown": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customercounty": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customercountryiso2a": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerpostcode": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customeremail": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customertelephonetype": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customertelephone": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerprefixname": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerfirstname": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customermiddlename": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerlastname": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customersuffixname": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE
+            },
+            "customerforwardedip": {
+                "inc": AUTH | CUSTOM,
+                "req": NONE,
+                "val": self.validateIP
+            },
+            "settleduedate": {
+                "inc": AUTH | UPDATE | CUSTOM,
+                "req": NONE,
+            },
+            "settlestatus": {
+                "inc": AUTH | UPDATE | CUSTOM,
+                "req": NONE,
+            },
+            "settlebaseamount": {
+                "inc": UPDATE | CUSTOM,
+                "req": NONE,
+            }
+        })
+
+    def toggleHeader(self, header: str):
+        try:
+            self.HEADERS[header]["active"] = not self.HEADERS[header]["active"]
+        except Exception as e:
+            log.error("Header label does not exist")
+
+    def runValidation(self, field, value):
+        result = False
+        try:
+            result = self.FIELDS[field]["val"](value)
+        except KeyError as ke:
+            result = True
+        return result
+
+    def validateEmail(self, email):
+        return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
 
 
-def validateDateTime(datetime):
-    return not not re.fullmatch(  # not not returns True rather than the match object
-        "[12]{1}[0-9]{3}-(01|02|03|04|05|06|07|08|09|10|11|12)-([012]{1}[0-9]{1}|30|31)\s([01]{1}[0-9]{1}|20|21|22|23)(:[0-5]{1}[0-9]{1}){2}",
-        datetime
-    )
-
-
-def validateBaseamount(amount):
-    return not not re.fullmatch(  # not not returns True rather than the match object
-        "[1-9]+[0-9]*",
-        amount
-    )
-
-
-def validateEmail(email):
-    return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
-
-
-def validateIP(ip):
-    return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)
-
-
-FIELDS = {
-    "accounttypedescription": {
-        "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
-        "inc": QUERY | AUTH,
-        "req": AUTH
-    },
-    "billingemail": {
-        "val": validateEmail,
-        "inc": QUERY,
-        "req": NONE
-    },
-    "billingfirstname": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "billinglastname": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "billingpostcode": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "billingpremise": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "billingstreet": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "currencyiso3a": {
-        "inc": QUERY | AUTH,
-        "req": AUTH
-    },
-    "customerip": {
-        "inc": QUERY | AUTH,
-        "req": NONE,
-        "val": validateIP
-    },
-    "orderreference": {
-        "inc": QUERY | AUTH | REFUND | UPDATE,
-        "req": NONE
-    },
-    "pan": {
-        "inc": QUERY | AUTH,
-        "req": AUTH,
-    },
-    "parenttransactionreference": {
-        "inc": QUERY | AUTH | REFUND,
-        "req": REFUND
-    },
-    "paymenttypedescriptions": {
-        "inc": QUERY | AUTH,
-        "req": NONE
-    },
-    "requesttypedescriptions": {
-        "inc": AUTH | REFUND | UPDATE | CHECK,
-        "req": AUTH | REFUND | UPDATE | CHECK
-    },
-    "requesttypedescription": {
-        "inc": QUERY,
-        "req": NONE
-    },
-    "sitereference": {
-        "inc": QUERY | AUTH | REFUND | UPDATE,
-        "req": AUTH | REFUND | UPDATE
-    },
-    "transactionreference": {
-        "inc": QUERY | UPDATE,
-        "req": UPDATE
-    },
-    "authmethod": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "credentialsonfile": {
-        "inc": AUTH | CHECK,
-        "req": CHECK
-    },
-    "initiationreason": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "baseamount": {
-        "inc": AUTH | REFUND,
-        "req": AUTH
-    },
-    "expirydate": {
-        "inc": AUTH | REFUND,
-        "req": AUTH
-    },
-    "securitycode": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "chargedescription": {
-        "inc": AUTH | REFUND,
-        "req": NONE
-    },
-    "merchantemail": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "operatorname": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerstreet": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customertown": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customercounty": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customercountryiso2a": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerpostcode": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customeremail": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customertelephonetype": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customertelephone": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerprefixname": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerfirstname": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customermiddlename": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerlastname": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customersuffixname": {
-        "inc": AUTH,
-        "req": NONE
-    },
-    "customerforwardedip": {
-        "inc": AUTH,
-        "req": NONE,
-        "val": validateIP
-    },
-    "settleduedate": {
-        "inc": AUTH | UPDATE,
-        "req": NONE,
-    },
-    "settlestatus": {
-        "inc": AUTH | UPDATE,
-        "req": NONE,
-    },
-    "settlebaseamount": {
-        "inc": UPDATE,
-        "req": NONE,
-    }
-}
-
-tableHeaders = {
-    "Transaction started": "transactionstartedtimestamp",
-    "Reference": "transactionreference",
-    "Amount": "baseamount",
-    "Account type": "accounttypedescription",
-    "Request type": "requesttypedescription",
-    "Payment type": "paymenttypedescription",
-    "Card number": "maskedpan",
-    "Settle status": "settlestatus",
-    "First name": "billingfirstname",
-    "Last name": "billinglastname"
-}
-
-
-def runValidation(field, value):
-    result = False
-    try:
-        result = FIELDS[field]["val"](value)
-    except KeyError as ke:
-        result = True
-    return result
+    def validateIP(self, ip):
+        return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)

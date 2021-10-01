@@ -7,3 +7,4 @@ class RequestType(Enum):
     REFUND = 4
     TRANSACTIONUPDATE = 8
     ACCOUNTCHECK = 16
+    CUSTOM = 32
