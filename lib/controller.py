@@ -129,7 +129,7 @@ class Controller:
 
     def _submitREFUND(self, window):
         responses = []
-        if len(window.transactions) > 1:
+        if len(window.transactions) > 0:
             for t in window.transactions:
                 if t["requesttypedescription"] == "AUTH" and t["settlestatus"] == "100":
                     gatewayResponse = self.api.makeRequest({

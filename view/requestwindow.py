@@ -64,11 +64,10 @@ class RequestWindow(QDialog):
 
     def _setupRefund(self):
         log.debug(f"Setting up REFUND window with {len(self.transactions)} transactions")
-        if len(self.transactions) <= 1:
+        if len(self.transactions) == 0:
             instructions = """
             Enter the details of the transaction you wish to refund.
             Only AUTHS that have settled (settlestatus=100) can be refunded.
-            If you selected one transaction from the main table it will be pre-filled here.
             """
             self.layout.addWidget(QLabel(instructions))
             self.requiredInputs = {}
@@ -80,12 +79,6 @@ class RequestWindow(QDialog):
                     row.addWidget(QLabel(field))
                     row.addWidget(fieldInput)
                     self.layout.addLayout(row)
-            if len(self.transactions) == 1:
-                transaction = self.transactions[0]
-                if transaction["requesttypedescription"] != "AUTH" or transaction["settlestatus"] != "100":
-                    raise Exception("Can only refund AUTHs that have settled (100)")
-                self.requiredInputs["parenttransactionreference"].setText(transaction["transactionreference"])
-                self.requiredInputs["sitereference"].setText(transaction["sitereference"])
             self.requiredInputs["requesttypedescriptions"].setText("REFUND")
             self.submitButton = QPushButton("Submit request")
             self.layout.addWidget(self.submitButton)
