@@ -73,6 +73,7 @@ class Controller:
         try:
             self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
         except Exception as e:  # If the request has not been written
+            log.error(e)
             Error(e).exec()
             return
         self.requestWindow.submitButton.clicked.connect(self._submitRequest)
