@@ -63,6 +63,7 @@ class WSMain(QMainWindow):
         self.userInput = QLineEdit()
         self.userInput.setText(os.environ.get("WS_USERNAME", ""))
         self.passInput = QLineEdit()
+        self.passInput.setEchoMode(Qt.QLineEdit.Password)
         self.passInput.setText(os.environ.get("WS_PASSWORD", ""))
         self.loginButton = QPushButton("Login")
         for w in [userLabel, self.userInput, passLabel, self.passInput, self.loginButton]:

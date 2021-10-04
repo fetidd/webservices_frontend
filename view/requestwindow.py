@@ -136,6 +136,9 @@ class RequestWindow(QDialog):
         row.addWidget(newFieldButton)
         row.addWidget(self.submitButton)
         self.layout.addLayout(row)
+        # Add some initial empty rows as there won't be any at all when this window opens
+        for i in range(6):
+            self._addDropdownRow(fields)
 
     def _addDropdownRow(self, fields):
         rowCount = len(self.findChildren(QWidget, options=Qt.FindDirectChildrenOnly))
