@@ -26,6 +26,7 @@ CHECK = RequestType.ACCOUNTCHECK.value
 NONE = RequestType.NONE.value
 CUSTOM = RequestType.CUSTOM.value
 
+
 class Config:
     def __init__(self):
         self.HEADERS = OrderedDict({
@@ -137,7 +138,7 @@ class Config:
             },
             "securitycode": {
                 "inc": AUTH | CUSTOM,
-                "req": NONE
+                "req": NONE | AUTH
             },
             "chargedescription": {
                 "inc": AUTH | REFUND | CUSTOM,
