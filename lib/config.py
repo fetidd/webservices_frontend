@@ -223,6 +223,27 @@ class Config:
             }
         })
 
+        self.INSTRUCTIONS = {
+            RequestType.TRANSACTIONQUERY: """
+        Select a start and end date for the period you wish to query.
+        Click 'New field' to add a row containing a dropdown and input box to specify cfg.FIELDS to filter by. 
+        To add multiple values for the same filter, separate the values with commas.
+        """,
+            RequestType.REFUND: """
+            Enter the details of the transaction you wish to refund.
+            Only AUTHS that have settled (settlestatus=100) can be refunded.
+            """,
+            RequestType.CUSTOM: """
+        Click 'New field' to add a row containing a dropdown and input box to enter a value for the field.
+        When submitting you must ensure the cfg.FIELDS and values follow the specification for the requesttype as shown 
+        in the docs. 
+        To add multiple values for the same field, separate the values with commas.
+        """,
+            RequestType.AUTH: "",
+            RequestType.ACCOUNTCHECK: "",
+
+        }
+
     def toggleHeader(self, header: str):
         try:
             self.HEADERS[header]["active"] = not self.HEADERS[header]["active"]
