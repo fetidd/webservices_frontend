@@ -27,6 +27,14 @@ NONE = RequestType.NONE.value
 CUSTOM = RequestType.CUSTOM.value
 
 
+def validateEmail(email):
+    return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
+
+
+def validateIP(ip):
+    return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)
+
+
 class Config:
     def __init__(self):
         self.HEADERS = OrderedDict({
@@ -51,7 +59,7 @@ class Config:
                 "req": AUTH
             },
             "billingemail": {
-                "val": self.validateEmail,
+                "val": validateEmail,
                 "inc": QUERY | CUSTOM,
                 "req": NONE
             },
@@ -82,7 +90,7 @@ class Config:
             "customerip": {
                 "inc": QUERY | AUTH | CUSTOM,
                 "req": NONE,
-                "val": self.validateIP
+                "val": validateIP
             },
             "orderreference": {
                 "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
@@ -102,7 +110,7 @@ class Config:
             },
             "requesttypedescriptions": {
                 "inc": AUTH | REFUND | UPDATE | CHECK | CUSTOM,
-                "req": AUTH | REFUND | UPDATE | CHECK
+                "req": CUSTOM  # technically every request requires this, but the controller adds it to the other types
             },
             "requesttypedescription": {
                 "inc": QUERY,
@@ -207,7 +215,7 @@ class Config:
             "customerforwardedip": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
-                "val": self.validateIP
+                "val": validateIP
             },
             "settleduedate": {
                 "inc": AUTH | UPDATE | CUSTOM,
@@ -233,16 +241,18 @@ class Config:
                 When submitting you must ensure the cfg.FIELDS and values follow the specification for the requesttype as shown 
                 in the docs. 
                 To add multiple values for the same field, separate the values with commas.""",
-            RequestType.AUTH: "",
-            RequestType.ACCOUNTCHECK: "",
+            RequestType.AUTH: """All the initial fields are required and cannot be empty.
+                New field adds extra fields to the request.""",
+            RequestType.ACCOUNTCHECK: """All the initial fields are required and cannot be empty.
+                New field adds extra fields to the request.""",
 
         }
 
     def toggleHeader(self, header: str):
         try:
             self.HEADERS[header]["active"] = not self.HEADERS[header]["active"]
-        except Exception as e:
-            log.error("Header label does not exist")
+        except KeyError as e:
+            log.error(f"Header label {e} does not exist")
 
     def runValidation(self, field, value):
         result = False
@@ -251,10 +261,3 @@ class Config:
         except KeyError as ke:
             result = True
         return result
-
-    def validateEmail(self, email):
-        return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
-
-
-    def validateIP(self, ip):
-        return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)

@@ -14,7 +14,7 @@ cfg = Config()
 class RequestWindow(QDialog):
     def __init__(self, requestType: RequestType, transactions):
         super().__init__()
-        log.debug("Creating a new RequestWindow")
+        log.debug(f"Creating a new {requestType.name} window")
 
         self.setWindowTitle(f"New {requestType.name}")
         self.requestType = requestType
@@ -72,7 +72,6 @@ class RequestWindow(QDialog):
                 row.addWidget(QLabel(field))
                 row.addWidget(fieldInput)
                 self.layout.addLayout(row)
-        self.requiredInputs["requesttypedescriptions"].setText(self.requestType.name)
 
     def _addBatchRefundComponents(self):
         transactions = [t for t in self.transactions if

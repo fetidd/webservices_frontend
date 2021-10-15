@@ -80,7 +80,7 @@ class Controller:
             raise Exception("There is already a request window open!")
         try:
             self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
-        except Exception as e:  # If the request has not been written
+        except Exception as e:
             log.error(e)
             Error(e).exec()
             return
@@ -186,7 +186,7 @@ class Controller:
 
     def _submitAUTH(self, window):
         request = {f: v.text() for f, v in window.requiredInputs.items()}
-        print(request)
+        request["requesttypedescriptions"] = ["AUTH"]
         # get customs rows
         rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
         for row in rows:
@@ -204,7 +204,7 @@ class Controller:
 
     def _submitACCOUNTCHECK(self, window):
         request = {f: v.text() for f, v in window.requiredInputs.items()}
-        print(request)
+        request["requesttypedescriptions"] = ["ACCOUNTCHECK"]
         # get customs rows
         rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
         for row in rows:
