@@ -1,12 +1,14 @@
 """
-Configuration.
+Configuration class.
 
 FIELDS:
     Key: the field name the gateway expects
-        val: A function used to validate the value in the input
+        val: A function used to validate the value in the input (optional)
         inc: A bitmask to show which requests this is a field for
-        req: A bitmask to show which requests this field is required for 
-            (must be smaller than inc)
+        req: A bitmask to show which requests this field is required for
+        humanString: a nicer string to use in headers etc.
+        activeInTransactionTableHeader: bool toggle for whether the field is a header in main table
+        position: 0-indexed position for the header in the main table (should be 99 if activeInTransaction... is False)
 """
 from lib.requesttype import RequestType
 import re
