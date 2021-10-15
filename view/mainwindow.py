@@ -1,7 +1,8 @@
+from PySide6.QtGui import QAction
 from lib.requesttype import RequestType
 from PySide6.QtWidgets import (
     QMainWindow, QLabel, QPushButton, QLineEdit, QHBoxLayout,
-    QVBoxLayout, QWidget)
+    QVBoxLayout, QWidget, QMenuBar, QMenu)
 from lib.logger import createLogger
 from view.transactiontable import TransactionTable
 from dotenv import load_dotenv
@@ -20,9 +21,9 @@ class WSMain(QMainWindow):
         log.debug("calling __init__")
         super().__init__()
         self._configure()
+        self._addMenubar()
         self._addLogin()
         self._addTable()
-        self._addButtons()
         log.debug("calling show")
         self.show()
 
@@ -81,17 +82,13 @@ class WSMain(QMainWindow):
         self.table = table
         log.debug("_addTable returning")
 
-    def _addButtons(self):
-        """Create and add the button section to the main window."""
-        log.debug("_addButtons called")
-        layout = QHBoxLayout()
-        buttons = [rt.name for rt in RequestType if rt.name not in ["NONE", "TRANSACTIONUPDATE"]]
-        self.requestButtons = {}
-        for b in buttons:
-            btn = QPushButton(b)
-            self.requestButtons[b] = btn
-            layout.addWidget(btn)
-        self.layout.addLayout(layout)
-        log.debug("_addButtons returning")
 
-    
+    def _addMenubar(self):
+        bar = QMenuBar()
+        requestMenu = QMenu("&New Request")
+        self.requestActions = {rt.name: QAction(f"&{rt.name}") for rt in list(RequestType) if rt.name not in ["NONE", "TRANSACTIONUPDATE"]}
+        for action in self.requestActions.values():
+            requestMenu.addAction(action)
+        bar.addMenu(requestMenu)
+        self.setMenuBar(bar)
+
