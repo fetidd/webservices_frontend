@@ -113,9 +113,16 @@ class Config:
                 "activeInTransactionTableHeader": False,
                 "position": 99
             },
+            "pan": {
+                "inc": AUTH | CUSTOM,
+                "req": AUTH,
+                "humanString": "Card number",
+                "activeInTransactionTableHeader": False,
+                "position": 99
+            },
             "maskedpan": {
-                "inc": QUERY | AUTH | CUSTOM,
-                "req": AUTH | CHECK,
+                "inc": QUERY | CUSTOM,
+                "req": NONE,
                 "humanString": "Card number",
                 "activeInTransactionTableHeader": True,
                 "position": 99
