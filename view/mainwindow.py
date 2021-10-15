@@ -63,6 +63,7 @@ class WSMain(QMainWindow):
         self.userInput = QLineEdit()
         self.userInput.setText(os.environ.get("WS_USERNAME", ""))
         self.passInput = QLineEdit()
+        self.passInput.setEchoMode(QLineEdit.Password)
         self.passInput.setText(os.environ.get("WS_PASSWORD", ""))
         self.loginButton = QPushButton("Login")
         for w in [userLabel, self.userInput, passLabel, self.passInput, self.loginButton]:
@@ -84,7 +85,7 @@ class WSMain(QMainWindow):
         """Create and add the button section to the main window."""
         log.debug("_addButtons called")
         layout = QHBoxLayout()
-        buttons = [rt.name for rt in RequestType if rt.name not in ["NONE", "TRANSACTIONUPDATE", "AUTH", "ACCOUNTCHECK"]]
+        buttons = [rt.name for rt in RequestType if rt.name not in ["NONE", "TRANSACTIONUPDATE"]]
         self.requestButtons = {}
         for b in buttons:
             btn = QPushButton(b)

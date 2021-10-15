@@ -11,13 +11,16 @@ cfg = Config()
 class TransactionTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 0)
-        self._setupTable()
+        self._setupTableHeaders()
         self.resizeColumnsToContents()
         self.setSelectionBehavior(QTableView.SelectRows)
         self.transactions = []
 
-    def _setupTable(self):
-        headers = [h for h, d in cfg.HEADERS.items() if d["active"]]
+    def _setupTableHeaders(self):
+        headers = [(d["humanString"], d["position"]) for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
+        # Sort the headers
+        headers = [header for header, position in sorted(headers, key=lambda h: h[1])]
+        # Apply the headers
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
@@ -31,13 +34,13 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for data in cfg.HEADERS.values():
-                if data["active"]:
-                    text = transaction.get(data["apiField"], "")
-                    if data["apiField"] == "baseamount":
+            for field, data in sorted(cfg.FIELDS.items(), key=lambda i: i[1]["position"]):
+                if data["activeInTransactionTableHeader"]:
+                    text = transaction.get(field, "")
+                    if field == "baseamount":
                         text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"
                     item = TransactionTableItem(text=text, ref=transaction["transactionreference"])
-                    if data["apiField"] == "settlestatus":
+                    if field == "settlestatus":
                         item.applyStatusColor(text)
                     item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                     self.setItem(row, col, item)
