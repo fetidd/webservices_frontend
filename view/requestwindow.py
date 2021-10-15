@@ -36,8 +36,13 @@ class RequestWindow(QDialog):
             RequestType.ACCOUNTCHECK,
         ]:
             self._addRequiredFields()
-        if not (requestType == RequestType.REFUND and len(self.transactions)) > 0:
-            self._addNewFieldAndSubmitButtons()
+
+        self.buttonRow = QHBoxLayout()
+        self.layout.addLayout(self.buttonRow)
+
+        if (not (requestType == RequestType.REFUND and len(self.transactions))) and (not requestType == RequestType.ACCOUNTCHECK) > 0:
+            self._addNewFieldButton()
+        self._addSubmitButton()
         if requestType == RequestType.CUSTOM:
             for i in range(6):
                 self._addDropdownRow(self.fields)
@@ -52,15 +57,15 @@ class RequestWindow(QDialog):
         rowLayout.addWidget(self.endInput)
         self.layout.addWidget(row)
 
-    def _addNewFieldAndSubmitButtons(self):
+    def _addNewFieldButton(self):
         newFieldButton = QPushButton("New field", clicked=lambda: self._addDropdownRow(self.fields))
         newFieldButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.buttonRow.addWidget(newFieldButton)
+
+    def _addSubmitButton(self):
         self.submitButton = QPushButton("Submit request")
         self.submitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        row = QHBoxLayout()
-        row.addWidget(newFieldButton)
-        row.addWidget(self.submitButton)
-        self.layout.addLayout(row)
+        self.buttonRow.addWidget(self.submitButton)
 
     def _addRequiredFields(self):
         self.requiredInputs = {}
@@ -92,9 +97,6 @@ class RequestWindow(QDialog):
                 self.table.setItem(index, i, w)
         self.table.resizeColumnsToContents()
         self.layout.addWidget(self.table)
-        self.submitButton = QPushButton("Submit request")
-        self.submitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.layout.addWidget(self.submitButton)
 
     def _addDropdownRow(self, fields):
         rowCount = len(self.findChildren(QWidget, options=Qt.FindDirectChildrenOnly))

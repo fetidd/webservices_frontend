@@ -114,8 +114,8 @@ class Config:
                 "position": 99
             },
             "pan": {
-                "inc": AUTH | CUSTOM,
-                "req": AUTH,
+                "inc": AUTH | CHECK | CUSTOM,
+                "req": AUTH | CHECK,
                 "humanString": "Card number",
                 "activeInTransactionTableHeader": False,
                 "position": 99
@@ -369,6 +369,7 @@ class Config:
 
         })
 
+        # TODO improve how instructions are displayed
         self.INSTRUCTIONS = {
             RequestType.TRANSACTIONQUERY: """Select a start and end date for the period you wish to query.
                 Click 'New field' to add a row containing a dropdown and input box to specify cfg.FIELDS to filter by. 
@@ -383,8 +384,7 @@ class Config:
                 New field adds extra fields to the request.""",
             RequestType.ACCOUNTCHECK: """The card entered below will not be charged, but will be saved on the gateway
                 for future use, requiring only the securitycode and transactionreference of this as parent.
-                All the initial fields are required and cannot be empty.
-                New field adds extra fields to the request.""",
+                All the initial fields are required and cannot be empty.""",
         }
 
     def toggleHeader(self, header: str):
