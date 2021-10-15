@@ -38,20 +38,21 @@ def validateIP(ip):
 class Config:
     def __init__(self):
         self.HEADERS = OrderedDict({
-            "Transaction started": {"apiField": "transactionstartedtimestamp", "active": True},
-            "Reference": {"apiField": "transactionreference", "active": True},
-            "Request type": {"apiField": "requesttypedescription", "active": True},
-            "Account type": {"apiField": "accounttypedescription", "active": True},
-            "Settle status": {"apiField": "settlestatus", "active": True},
-            "Amount": {"apiField": "baseamount", "active": True},
-            "Payment type": {"apiField": "paymenttypedescription", "active": True},
-            "Card number": {"apiField": "maskedpan", "active": True},
-            "First name": {"apiField": "billingfirstname", "active": True},
-            "Last name": {"apiField": "billinglastname", "active": True},
-            "Merchant name": {"apiField": "merchantname", "active": True},
-            "Site reference": {"apiField": "sitereference", "active": True},
-            "Operator": {"apiField": "operatorname", "active": True},
+            "transactionstartedtimestamp": {"humanString": "Transaction started", "active": True},
+            "transactionreference": {"humanString": "Reference", "active": True},
+            "requesttypedescription": {"humanString": "Request type", "active": True},
+            "accounttypedescription": {"humanString": "Account type", "active": True},
+            "settlestatus": {"humanString": "Settle status", "active": True},
+            "baseamount": {"humanString": "Amount", "active": True},
+            "paymenttypedescription": {"humanString": "Payment type", "active": True},
+            "maskedpan": {"humanString": "Card number", "active": True},
+            "billingfirstname": {"humanString": "First name", "active": True},
+            "billinglastname": {"humanString": "Last name", "active": True},
+            "merchantname": {"humanString": "Merchant name", "active": True},
+            "sitereference": {"humanString": "Site reference", "active": True},
+            "operatorname": {"humanString": "Operator", "active": True},
         })
+
         self.FIELDS = OrderedDict({
             "accounttypedescription": {
                 "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
@@ -247,7 +248,6 @@ class Config:
                 for future use, requiring only the securitycode and transactionreference of this as parent.
                 All the initial fields are required and cannot be empty.
                 New field adds extra fields to the request.""",
-
         }
 
     def toggleHeader(self, header: str):

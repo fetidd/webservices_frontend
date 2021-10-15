@@ -17,7 +17,7 @@ class TransactionTable(QTableWidget):
         self.transactions = []
 
     def _setupTable(self):
-        headers = [h for h, d in cfg.HEADERS.items() if d["active"]]
+        headers = [d["humanString"] for h, d in cfg.HEADERS.items() if d["active"]]
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
@@ -31,13 +31,13 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for data in cfg.HEADERS.values():
+            for field, data in cfg.HEADERS.items():
                 if data["active"]:
-                    text = transaction.get(data["apiField"], "")
-                    if data["apiField"] == "baseamount":
+                    text = transaction.get(field, "")
+                    if field == "baseamount":
                         text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"
                     item = TransactionTableItem(text=text, ref=transaction["transactionreference"])
-                    if data["apiField"] == "settlestatus":
+                    if field == "settlestatus":
                         item.applyStatusColor(text)
                     item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                     self.setItem(row, col, item)
