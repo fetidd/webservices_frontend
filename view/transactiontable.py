@@ -17,7 +17,7 @@ class TransactionTable(QTableWidget):
         self.transactions = []
 
     def _setupTable(self):
-        headers = [d["humanString"] for h, d in cfg.HEADERS.items() if d["active"]]
+        headers = [d["humanString"] for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
@@ -31,8 +31,8 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for field, data in cfg.HEADERS.items():
-                if data["active"]:
+            for field, data in cfg.FIELDS.items():
+                if data["activeInTransactionTableHeader"]:
                     text = transaction.get(field, "")
                     if field == "baseamount":
                         text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"
