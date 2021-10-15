@@ -56,7 +56,7 @@ class Config:
             "accounttypedescription": {
                 "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
                 "inc": QUERY | AUTH | CUSTOM,
-                "req": AUTH
+                "req": AUTH | CHECK
             },
             "billingemail": {
                 "val": validateEmail,
@@ -85,7 +85,7 @@ class Config:
             },
             "currencyiso3a": {
                 "inc": QUERY | AUTH | CUSTOM,
-                "req": AUTH
+                "req": AUTH | CHECK
             },
             "customerip": {
                 "inc": QUERY | AUTH | CUSTOM,
@@ -98,7 +98,7 @@ class Config:
             },
             "pan": {
                 "inc": QUERY | AUTH | CUSTOM,
-                "req": AUTH,
+                "req": AUTH | CHECK
             },
             "parenttransactionreference": {
                 "inc": QUERY | AUTH | REFUND | CUSTOM,
@@ -118,7 +118,7 @@ class Config:
             },
             "sitereference": {
                 "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
-                "req": AUTH | REFUND | UPDATE
+                "req": AUTH | REFUND | UPDATE | CHECK
             },
             "transactionreference": {
                 "inc": QUERY | UPDATE | CUSTOM,
@@ -130,7 +130,7 @@ class Config:
             },
             "credentialsonfile": {
                 "inc": AUTH | CHECK | CUSTOM,
-                "req": CHECK
+                "req": NONE
             },
             "initiationreason": {
                 "inc": AUTH | CUSTOM,
@@ -138,15 +138,15 @@ class Config:
             },
             "baseamount": {
                 "inc": AUTH | REFUND | CUSTOM,
-                "req": AUTH
+                "req": AUTH | CHECK
             },
             "expirydate": {
                 "inc": AUTH | REFUND | CUSTOM,
-                "req": AUTH
+                "req": AUTH | CHECK
             },
             "securitycode": {
                 "inc": AUTH | CUSTOM,
-                "req": NONE | AUTH
+                "req": AUTH | CHECK
             },
             "chargedescription": {
                 "inc": AUTH | REFUND | CUSTOM,
@@ -241,9 +241,11 @@ class Config:
                 When submitting you must ensure the cfg.FIELDS and values follow the specification for the requesttype as shown 
                 in the docs. 
                 To add multiple values for the same field, separate the values with commas.""",
-            RequestType.AUTH: """All the initial fields are required and cannot be empty.
+            RequestType.AUTH: """All the initial fields are required and cannot be empty, unless using a saved card.
                 New field adds extra fields to the request.""",
-            RequestType.ACCOUNTCHECK: """All the initial fields are required and cannot be empty.
+            RequestType.ACCOUNTCHECK: """The card entered below will not be charged, but will be saved on the gateway
+                for future use, requiring only the securitycode and transactionreference of this as parent.
+                All the initial fields are required and cannot be empty.
                 New field adds extra fields to the request.""",
 
         }

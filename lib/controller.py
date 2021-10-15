@@ -203,8 +203,10 @@ class Controller:
         ResponseWindow(analyseResponses(responses)).exec()
 
     def _submitACCOUNTCHECK(self, window):
+        """Accountcheck to tokenise payment details on gateway"""
         request = {f: v.text() for f, v in window.requiredInputs.items()}
         request["requesttypedescriptions"] = ["ACCOUNTCHECK"]
+        request["credentialsonfile"] = "1"
         # get customs rows
         rows = [{row.findChild(QComboBox): row.findChild(QLineEdit)} for row in window.rows]
         for row in rows:
