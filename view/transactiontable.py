@@ -20,7 +20,6 @@ class TransactionTable(QTableWidget):
         headers = [(d["humanString"], d["position"]) for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
         # Sort the headers
         headers = [header for header, position in sorted(headers, key=lambda h: h[1])]
-        print(headers)
         # Apply the headers
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
