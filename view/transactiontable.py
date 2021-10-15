@@ -11,13 +11,17 @@ cfg = Config()
 class TransactionTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 0)
-        self._setupTable()
+        self._setupTableHeaders()
         self.resizeColumnsToContents()
         self.setSelectionBehavior(QTableView.SelectRows)
         self.transactions = []
 
-    def _setupTable(self):
-        headers = [d["humanString"] for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
+    def _setupTableHeaders(self):
+        headers = [(d["humanString"], d["position"]) for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
+        # Sort the headers
+        headers = [header for header, position in sorted(headers, key=lambda h: h[1])]
+        print(headers)
+        # Apply the headers
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
 
@@ -31,7 +35,7 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for field, data in cfg.FIELDS.items():
+            for field, data in sorted(cfg.FIELDS.items(), key=lambda i: i[1]["position"]):
                 if data["activeInTransactionTableHeader"]:
                     text = transaction.get(field, "")
                     if field == "baseamount":
