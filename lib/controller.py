@@ -10,6 +10,14 @@ from lib.requesttype import RequestType
 log = createLogger(__name__)
 
 
+def analyseResponses(responses: list) -> dict:
+    """Expects a list of the inner responses from the outer gateway response."""
+    log.debug(f"Analysing {responses}")
+    analysis = {res.get("referenceForResult", "NOREF!"): {"response": res, "error": not not int(res.get("errorcode", "ERROR!"))} for res in responses}
+    log.debug(f"\t->> {len(analysis.keys())}: {analysis}")
+    return analysis
+
+
 class Controller:
     def __init__(self, view, model, api):
         self.view = view
@@ -153,7 +161,7 @@ class Controller:
             })
             response["referenceForResult"] = window.requiredInputs["parenttransactionreference"].text()
             responses.append(response)
-        ResponseWindow(self._analyseResponses(responses)).exec()
+        ResponseWindow(analyseResponses(responses)).exec()
 
     def _submitCUSTOM(self, window):
         # Build a request object from the inputted data
@@ -174,7 +182,7 @@ class Controller:
         for response in gatewayResponse["responses"]:
             response["referenceForResult"] = response.get("transactionreference", "ERROR!")
             responses.append(response)
-        ResponseWindow(self._analyseResponses(responses)).exec()
+        ResponseWindow(analyseResponses(responses)).exec()
 
     def _submitAUTH(self, window):
         request = {f: v.text() for f, v in window.requiredInputs.items()}
@@ -192,7 +200,7 @@ class Controller:
         for response in gatewayResponse["responses"]:
             response["referenceForResult"] = response.get("transactionreference", "ERROR!")
             responses.append(response)
-        ResponseWindow(self._analyseResponses(responses)).exec()
+        ResponseWindow(analyseResponses(responses)).exec()
 
     def _submitACCOUNTCHECK(self, window):
         request = {f: v.text() for f, v in window.requiredInputs.items()}
@@ -210,14 +218,7 @@ class Controller:
         for response in gatewayResponse["responses"]:
             response["referenceForResult"] = response.get("transactionreference", "ERROR!")
             responses.append(response)
-        ResponseWindow(self._analyseResponses(responses)).exec()
-
-    def _analyseResponses(self, responses: list) -> dict:
-        """Expects a list of the inner responses from the outer gateway response."""
-        log.debug(f"Analysing {responses}")
-        analysis = {res.get("referenceForResult", "NOREF!"): {"response": res, "error": not not int(res.get("errorcode", "ERROR!"))} for res in responses}
-        log.debug(f"\t->> {len(analysis.keys())}: {analysis}")
-        return analysis
+        ResponseWindow(analyseResponses(responses)).exec()
 
     def _selectTransactions(self):
         log.debug("selecting transactions")
