@@ -17,9 +17,10 @@ class WSMain(QMainWindow):
     Main application window.
     """
 
-    def __init__(self):
+    def __init__(self, config):
         log.debug("calling __init__")
         super().__init__()
+        self._config = config
         self._configure()
         self._addMenubar()
         self._addLogin()
@@ -42,7 +43,6 @@ class WSMain(QMainWindow):
             self.table.clear()
         log.debug("toggleLogin returning")
 
-    # PRIVATE METHODS-------------------------------------------------------------------------------------------------
     def _configure(self):
         """Configure the main window geometry, layout and title."""
         log.debug("_configure called")
@@ -76,19 +76,25 @@ class WSMain(QMainWindow):
         """Create and add the transaction table to the main window."""
         log.debug("_addTable called")
         layout = QHBoxLayout()
-        table = TransactionTable()
+        table = TransactionTable(self._config)
         layout.addWidget(table)
         self.layout.addLayout(layout)
         self.table = table
         log.debug("_addTable returning")
 
-
     def _addMenubar(self):
         bar = QMenuBar()
+        # Create menus
         requestMenu = QMenu("&New Request")
+        settingsMenu = QMenu("&Settings")
+        # Create and add actions
         self.requestActions = {rt.name: QAction(f"&{rt.name}") for rt in list(RequestType) if rt.name not in ["NONE", "TRANSACTIONUPDATE"]}
+        self.settingsAction = QAction("&Edit")
         for action in self.requestActions.values():
             requestMenu.addAction(action)
+        settingsMenu.addAction(self.settingsAction)
+        # Add menus to menubar
         bar.addMenu(requestMenu)
+        bar.addMenu(settingsMenu)
+        # Set the menubar for the window
         self.setMenuBar(bar)
-

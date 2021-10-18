@@ -1,11 +1,19 @@
+import copy
+import os.path
+import pickle
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLineEdit, QComboBox
+
+from lib.config import Config
 from lib.logger import createLogger
 from view.errordialog import Error
 from view.infowindow import Info
+from view.mainwindow import WSMain
 from view.responsewindow import ResponseWindow
 from view.requestwindow import RequestWindow
 from lib.requesttype import RequestType
+from view.settingswindow import SettingsWindow
 
 log = createLogger(__name__)
 
@@ -21,12 +29,14 @@ def analyseResponses(responses: list) -> dict:
 
 
 class Controller:
-    def __init__(self, view, model, api):
-        self.view = view
+    def __init__(self, view, model, api, config):
+        self.view: WSMain = view
         self.model = model
         self.api = api
+        self.config = config
         self.selectedTransactions = []
         self.requestWindow = None
+        self.configCopy = None
         self._connectMainWindowComponents()
 
     def _connectMainWindowComponents(self):
@@ -45,6 +55,8 @@ class Controller:
         for a in self.view.requestActions.values():
             connectRequestAction(a)
         log.debug("_connectMainWindowComponents returning")
+        # Settings menu
+        self.view.settingsAction.triggered.connect(self._openSettingsWindow)
 
     def _login(self):
         log.debug("_login called")
@@ -73,6 +85,7 @@ class Controller:
         log.debug("_login returning")
         return
 
+    # REQUESTS --------------------------------------------------------------------------------------------------------
     def _openRequestWindow(self, requestType):
         log.debug(f"_openRequestWindow({requestType.name}) called")
         if not self.api.loggedIn:
@@ -235,3 +248,78 @@ class Controller:
 
     def _showTransactionInfo(self, transaction):
         Info(self.model.get(transaction.reference)).exec()
+
+    # SETTINGS WINDOW ------------------------------------------------------------------------------------------------
+    def _openSettingsWindow(self):
+        log.debug("_openSettingsWindow called")
+        self.configCopy = copy.deepcopy(self.config)
+        window = SettingsWindow(self.configCopy)
+        # connect save and default buttons
+        window.applyButton.clicked.connect(lambda: self._applySettings())
+        window.saveButton.clicked.connect(lambda: self._saveSettings())
+        window.defaultButton.clicked.connect(lambda: self._returnToDefaultSettings(window))
+        # connect left and right arrows
+        window.left.clicked.connect(lambda: self._toggleHeaderState(window, True))
+        window.right.clicked.connect(lambda: self._toggleHeaderState(window, False))
+        window.up.clicked.connect(lambda: self._moveHeader(window, "up"))
+        window.down.clicked.connect(lambda: self._moveHeader(window, "down"))
+
+        window.exec()
+
+    def _saveSettings(self):
+        pickle.dump(self.config, open("./settings.pkl", "wb"))
+
+    def _applySettings(self):
+        self.config.FIELDS = self.configCopy.FIELDS
+        self.view.table.clear()
+        self.view.table.setupTableHeaders()
+        self.view.table.populate(self.model.getAll())
+
+    def _returnToDefaultSettings(self, window):
+        fields = Config().FIELDS
+        self.config.FIELDS = fields
+        self.configCopy.FIELDS = fields
+        if os.path.exists("./settings.pkl"):
+            os.remove("./settings.pkl")
+        self.view.table.clear()
+        self.view.table.setupTableHeaders()
+        self.view.table.populate(self.model.getAll())
+        window.refreshHeaderSettings()
+
+    def _toggleHeaderState(self, window: SettingsWindow, state: bool):
+        log.debug(f"_toggleHeaderState({state}) called")
+        headers = window.unselectedHeaderList.selectedItems() if state else window.selectedHeaderList.selectedItems()
+        for header in headers:
+            field = self.configCopy.FIELDS[header.text()]
+            field["isActive"] = state
+            field["position"] = window.selectedHeaderList.count() if state else None
+            log.debug(f"{field['humanString']} is {state} at position {field['position']}")
+        window.refreshHeaderSettings()
+
+    def _moveHeader(self, window: SettingsWindow, direction: str):
+        log.debug(f"_moveHeader({direction}) called")
+        headers = window.selectedHeaderList.selectedItems()
+        for header in headers:
+            field = self.configCopy.FIELDS[header.text()]
+            origPos = field["position"]
+            newPos = None
+            if direction == "up":
+                if origPos == 0:
+                    log.debug(f"\t{header.text()} is at the top already...")
+                    return
+                newPos = origPos - 1
+            elif direction == "down":
+                if origPos == window.selectedHeaderList.count()-1:
+                    log.debug(f"\t{header.text()} is at the bottom already...")
+                    return
+                newPos = origPos + 1
+            else:
+                raise Exception("Argument was neither up nor down!")
+            for swapped, data in self.configCopy.FIELDS.items():
+                if data["position"] == newPos:
+                    data["position"] = origPos
+                    log.debug(f"\t{swapped} was at {newPos}, moved to {origPos}")
+                    break
+            field["position"] = newPos
+            log.debug(f"\t{header.text()} was at {origPos}, moved to {newPos}")
+            window.refreshHeaderSettings()

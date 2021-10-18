@@ -5,21 +5,21 @@ from lib.logger import createLogger
 from view.transactiontableitem import TransactionTableItem
 
 log = createLogger(__name__)
-cfg = Config()
 
 
 class TransactionTable(QTableWidget):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__(0, 0)
-        self._setupTableHeaders()
+        self.config = config
+        self.transactions = []
+        self.setupTableHeaders()
         self.resizeColumnsToContents()
         self.setSelectionBehavior(QTableView.SelectRows)
-        self.transactions = []
 
-    def _setupTableHeaders(self):
-        headers = [(d["humanString"], d["position"]) for h, d in cfg.FIELDS.items() if d["activeInTransactionTableHeader"]]
+    def setupTableHeaders(self):
+        activeFields = {field: data for field, data in self.config.FIELDS.items() if data["isActive"]}
         # Sort the headers
-        headers = [header for header, position in sorted(headers, key=lambda h: h[1])]
+        headers = [data["humanString"] for field, data in sorted(activeFields.items(), key=lambda f: f[1]["position"])]
         # Apply the headers
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
@@ -34,8 +34,9 @@ class TransactionTable(QTableWidget):
             self.insertRow(row)
             col = 0
             # Build each row
-            for field, data in sorted(cfg.FIELDS.items(), key=lambda i: i[1]["position"]):
-                if data["activeInTransactionTableHeader"]:
+            activeFields = {field: data for field, data in self.config.FIELDS.items() if data["isActive"]}
+            for field, data in sorted(activeFields.items(), key=lambda x: x[1]["position"]):
+                if data["isActive"]:
                     text = transaction.get(field, "")
                     if field == "baseamount":
                         text = f"{float(text)/100:.2f} {transaction.get('currencyiso3a', '')}"

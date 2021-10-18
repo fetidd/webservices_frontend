@@ -7,8 +7,8 @@ FIELDS:
         inc: A bitmask to show which requests this is a field for
         req: A bitmask to show which requests this field is required for
         humanString: a nicer string to use in headers etc.
-        activeInTransactionTableHeader: bool toggle for whether the field is a header in main table
-        position: 0-indexed position for the header in the main table (should be 99 if activeInTransaction... is False)
+        isActive: bool toggle for whether the field is a header in main table
+        position: 0-indexed position for the header in the main table (should be None if activeInTransaction... is False)
 """
 from lib.requesttype import RequestType
 import re
@@ -29,341 +29,336 @@ NONE = RequestType.NONE.value
 CUSTOM = RequestType.CUSTOM.value
 
 
-def validateEmail(email):
-    return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
 
-
-def validateIP(ip):
-    return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)
 
 
 class Config:
     def __init__(self):
         self.FIELDS = OrderedDict({
             "accounttypedescription": {
-                "val": lambda string: not not re.fullmatch("(ECOM|MOTO|RECUR)", string),
+                "val": self.validateAccountType,
                 "inc": QUERY | AUTH | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "Account",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billingemail": {
-                "val": validateEmail,
+                "val": self.validateEmail,
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "E-mail",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billingfirstname": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "First name",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billinglastname": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Last name",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billingpostcode": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Postcode",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billingpremise": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Premise",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "billingstreet": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Street",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "currencyiso3a": {
                 "inc": QUERY | AUTH | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "Currency",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerip": {
                 "inc": QUERY | AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Customer IP",
-                "activeInTransactionTableHeader": False,
-                "val": validateIP,
-                "position": 99
+                "isActive": False,
+                "val": self.validateIP,
+                "position": None
             },
             "orderreference": {
                 "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
                 "req": NONE,
                 "humanString": "Order ref.",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "pan": {
                 "inc": AUTH | CHECK | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "Card number",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "maskedpan": {
                 "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Card number",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "parenttransactionreference": {
                 "inc": QUERY | AUTH | REFUND | CUSTOM,
                 "req": REFUND,
                 "humanString": "Parent ref.",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "paymenttypedescriptions": {
                 "inc": QUERY | AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Payment type",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "paymenttypedescription": {
                 "inc": QUERY,
                 "req": NONE,
                 "humanString": "Payment type",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "requesttypedescriptions": {
                 "inc": AUTH | REFUND | UPDATE | CHECK | CUSTOM,
                 "req": CUSTOM,  # technically every request requires this, but the controller adds it to the other types
                 "humanString": "Request types",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "requesttypedescription": {
                 "inc": QUERY,
                 "req": NONE,
                 "humanString": "Request type",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "sitereference": {
                 "inc": QUERY | AUTH | REFUND | UPDATE | CUSTOM,
                 "req": AUTH | REFUND | UPDATE | CHECK,
                 "humanString": "Site ref.",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "transactionreference": {
                 "inc": QUERY | UPDATE | CUSTOM,
                 "req": UPDATE,
                 "humanString": "Reference",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "authmethod": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Auth method",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "credentialsonfile": {
                 "inc": AUTH | CHECK | CUSTOM,
                 "req": NONE,
                 "humanString": "Tokenised?",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "initiationreason": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Init. reason",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "baseamount": {
                 "inc": AUTH | REFUND | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "Amount",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "expirydate": {
                 "inc": AUTH | REFUND | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "Expiry",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "securitycode": {
                 "inc": AUTH | CUSTOM,
                 "req": AUTH | CHECK,
                 "humanString": "CVV",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "chargedescription": {
                 "inc": AUTH | REFUND | CUSTOM,
                 "req": NONE,
                 "humanString": "Charge desc.",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "merchantemail": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Merchant email",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "operatorname": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Operator name",
-                "activeInTransactionTableHeader": True,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerstreet": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. street",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customertown": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. town",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customercounty": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. country",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customercountryiso2a": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. country",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerpostcode": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. postcode",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customeremail": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. email",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customertelephonetype": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. tel. type",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customertelephone": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust telephone no.",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerprefixname": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. prefix",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerfirstname": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. first name",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customermiddlename": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. middle name",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerlastname": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. last name",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customersuffixname": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. suffix",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "customerforwardedip": {
                 "inc": AUTH | CUSTOM,
                 "req": NONE,
                 "humanString": "Cust. forwarded IP",
-                "activeInTransactionTableHeader": False,
-                "val": validateIP,
-                "position": 99
+                "isActive": False,
+                "val": self.validateIP,
+                "position": None
             },
             "settleduedate": {
                 "inc": AUTH | UPDATE | CUSTOM,
                 "req": NONE,
                 "humanString": "Settle due date",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "settlestatus": {
                 "inc": AUTH | UPDATE | CUSTOM,
                 "req": NONE,
                 "humanString": "Settle status",
-                "activeInTransactionTableHeader": True,
+                "isActive": True,
                 "position": 1
             },
             "settlebaseamount": {
                 "inc": UPDATE | CUSTOM,
                 "req": NONE,
                 "humanString": "Settle base amount",
-                "activeInTransactionTableHeader": False,
-                "position": 99
+                "isActive": False,
+                "position": None
             },
             "transactionstartedtimestamp": {
                 "inc": NONE,
                 "req": NONE,
                 "humanString": "Transaction started",
-                "activeInTransactionTableHeader": True,
+                "isActive": True,
                 "position": 0
             },
 
@@ -398,5 +393,14 @@ class Config:
         try:
             result = self.FIELDS[field]["val"](value)
         except KeyError as ke:
-            result = True
+            result = False
         return result
+
+    def validateEmail(self, email):
+        return not not re.fullmatch("[^@]+@[a-z]+\.[a-z]+", email)
+
+    def validateIP(self, ip):
+        return not not re.fullmatch("([0-9]{1,3}\.){3}[0-9]{1,3}", ip)
+
+    def validateAccountType(self, acct):
+        return not not re.fullmatch("(ECOM|MOTO|RECUR)", acct)
