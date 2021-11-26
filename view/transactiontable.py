@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTableWidget, QTableView
+from PySide6.QtWidgets import QHeaderView, QTableWidget, QTableView
 from lib.config import Config
 from lib.logger import createLogger
 from view.transactiontableitem import TransactionTableItem
@@ -12,8 +12,8 @@ class TransactionTable(QTableWidget):
     def __init__(self):
         super().__init__(0, 0)
         self._setupTableHeaders()
-        self.resizeColumnsToContents()
         self.setSelectionBehavior(QTableView.SelectRows)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.transactions = []
 
     def _setupTableHeaders(self):
@@ -22,6 +22,7 @@ class TransactionTable(QTableWidget):
         headers = [header for header, position in sorted(headers, key=lambda h: h[1])]
         # Apply the headers
         self.setColumnCount(len(headers))
+        self.verticalHeader().setVisible(False)
         self.setHorizontalHeaderLabels(headers)
 
     def populate(self, transactions):
@@ -47,7 +48,6 @@ class TransactionTable(QTableWidget):
                     col += 1
             row += 1
             self.transactions.append(transaction)
-        self.resizeColumnsToContents()
         log.debug("populateTable returning")
 
     def clear(self):
