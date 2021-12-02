@@ -110,7 +110,7 @@ class Controller:
             return
         self.requestWindow.submitButton.clicked.connect(self._submitRequest)
         # Add request saving ability
-        if self.requestWindow.saveButton:
+        if requestType == RequestType.CUSTOM:
             self.requestWindow.saveButton.clicked.connect(self._saveCurrentRequest)
             self.requestWindow.loadButton.clicked.connect(self._loadRequest)
         self.requestWindow.exec()
@@ -360,9 +360,10 @@ class Controller:
         requestDict = self.savedRequests[selectedRequest]
         # Add the extra rows the loaded request would need
         rowCount = len(window.rows)
-        loadCount = len(requestDict.keys())
+        loadCount = len(requestDict["data"].keys())
         difference = max((loadCount,rowCount)) - min((loadCount,rowCount))
         if loadCount > rowCount:
+            log.debug("ADDING EXTRA ROWS")
             for _ in range(difference):
                 window._addDropdownRow(window.fields)
         # Clear the current rows
