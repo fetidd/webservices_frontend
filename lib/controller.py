@@ -1,9 +1,10 @@
 import copy
 import os.path
 import pickle
+import json
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLineEdit, QComboBox
+from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QComboBox
 
 from lib.config import Config
 from lib.logger import createLogger
@@ -38,6 +39,11 @@ class Controller:
         self.requestWindow = None
         self.configCopy = None
         self._connectMainWindowComponents()
+        try:
+            self.savedRequests = self.loadSavedRequests()
+        except Exception as e:
+            log.exception("Couldn't load savedRequests.json!")
+            self.savedRequests = []
 
     def _connectMainWindowComponents(self):
         log.debug("_connectMainWindowComponents called")
@@ -85,6 +91,9 @@ class Controller:
         log.debug("_login returning")
         return
 
+    def loadSavedRequests(self):
+        return [i for i in json.load(open("./savedRequests.json", 'rb'))]
+
     # REQUESTS --------------------------------------------------------------------------------------------------------
     def _openRequestWindow(self, requestType):
         log.debug(f"_openRequestWindow({requestType.name}) called")
@@ -94,12 +103,16 @@ class Controller:
         if self.requestWindow is not None:  # This should never happen 
             raise Exception("There is already a request window open!")
         try:
-            self.requestWindow = RequestWindow(requestType, self.selectedTransactions)
+            self.requestWindow = RequestWindow(requestType, self.selectedTransactions, self.savedRequests)
         except Exception as e:
             log.error(e)
             Error(e).exec()
             return
         self.requestWindow.submitButton.clicked.connect(self._submitRequest)
+        # Add request saving ability
+        if self.requestWindow.saveButton:
+            self.requestWindow.saveButton.clicked.connect(self._saveCurrentRequest)
+            self.requestWindow.loadButton.clicked.connect(self._loadRequest)
         self.requestWindow.exec()
         self.requestWindow = None
         log.debug("_openRequestWindow returning")
@@ -323,3 +336,45 @@ class Controller:
             field["position"] = newPos
             log.debug(f"\t{header.text()} was at {origPos}, moved to {newPos}")
             window.refreshHeaderSettings()
+
+    #------------------------------------------------------------
+    # Saving and loading requests
+    def _saveCurrentRequest(self):
+        window = self.requestWindow
+        toSave = {
+            "name": window.saveInput.text(),
+            "data": {row.children()[1].currentText(): row.children()[2].text() for row in window.rows}
+        }
+        self.savedRequests.append(toSave)
+        with open("./savedRequests.json", 'w') as file:
+            json.dump(self.savedRequests, file)
+        self.savedRequests = self.loadSavedRequests()
+        window.reloadSavedRequestDropdown()
+
+
+    def _loadRequest(self):
+        window = self.requestWindow
+        # get the index of the selected request
+        selectedRequest = window.savedDropdown.currentIndex()
+        # get the actual request dict
+        requestDict = self.savedRequests[selectedRequest]
+        # Add the extra rows the loaded request would need
+        rowCount = len(window.rows)
+        loadCount = len(requestDict.keys())
+        difference = max((loadCount,rowCount)) - min((loadCount,rowCount))
+        if loadCount > rowCount:
+            for _ in range(difference):
+                window._addDropdownRow(window.fields)
+        # Clear the current rows
+        for row in window.rows:
+            combo: QComboBox = row.children()[1]
+            lineedit: QLineEdit = row.children()[2]
+            combo.setCurrentText("")
+            lineedit.setText("")
+        # add the saved fields and values
+        for i, (field, value) in enumerate(requestDict["data"].items()):
+            row = window.rows[i]
+            combo: QComboBox = row.children()[1]
+            lineedit: QLineEdit = row.children()[2]
+            combo.setCurrentText(field)
+            lineedit.setText(value)

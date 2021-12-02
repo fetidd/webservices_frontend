@@ -48,7 +48,7 @@ class WSMain(QMainWindow):
         log.debug("_configure called")
         self.setObjectName("MainWindow")
         self.setWindowTitle("Webservices Client")
-        self.resize(1400, 1000)
+        self.resize(900, 700)
         centralWidget = QWidget()
         self.setCentralWidget(centralWidget)
         self.layout = QVBoxLayout()

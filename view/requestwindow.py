@@ -12,7 +12,7 @@ cfg = Config()
 
 # noinspection PyArgumentList
 class RequestWindow(QDialog):
-    def __init__(self, requestType: RequestType, transactions):
+    def __init__(self, requestType: RequestType, transactions, savedRequests: list=[]):
         super().__init__()
         log.debug(f"Creating a new {requestType.name} window")
 
@@ -23,6 +23,7 @@ class RequestWindow(QDialog):
         self.setLayout(self.layout)
         self.rows = []
         self.fields = [field for field, data in cfg.FIELDS.items() if data["inc"] & self.requestType.value]
+        self.savedRequests = savedRequests
 
         # Set up requestWindow based on requestType
         self.layout.addWidget(QLabel(cfg.INSTRUCTIONS[requestType]))
@@ -30,11 +31,7 @@ class RequestWindow(QDialog):
             self._addDatePicker()
         elif requestType == RequestType.REFUND and len(self.transactions) > 0:
             self._addBatchRefundComponents()
-        elif requestType in [
-            RequestType.AUTH,
-            RequestType.REFUND,
-            RequestType.ACCOUNTCHECK,
-        ]:
+        elif requestType in [RequestType.AUTH, RequestType.REFUND, RequestType.ACCOUNTCHECK]:
             self._addRequiredFields()
 
         self.buttonRow = QHBoxLayout()
@@ -44,6 +41,7 @@ class RequestWindow(QDialog):
             self._addNewFieldButton()
         self._addSubmitButton()
         if requestType == RequestType.CUSTOM:
+            self._addSavedRequestRow()
             for i in range(6):
                 self._addDropdownRow(self.fields)
 
@@ -99,7 +97,7 @@ class RequestWindow(QDialog):
         self.layout.addWidget(self.table)
 
     def _addDropdownRow(self, fields):
-        rowCount = len(self.findChildren(QWidget, options=Qt.FindDirectChildrenOnly))
+        # rowCount = len(self.findChildren(QWidget, options=Qt.FindDirectChildrenOnly))
         row = QWidget(parent=self, objectName="requestRow")
         layout = QHBoxLayout()
         layout.setSpacing(5)
@@ -126,6 +124,30 @@ class RequestWindow(QDialog):
         self.rows.remove(row)
         self.adjustSize()
         log.debug(f"Deleted row")
+
+    def _addSavedRequestRow(self):
+        loadRow = QHBoxLayout()
+        label = QLabel("Load request:")
+        self.savedDropdown = QComboBox()
+        self.reloadSavedRequestDropdown()
+        self.loadButton = QPushButton("Load")
+        loadRow.addWidget(label)
+        loadRow.addWidget(self.savedDropdown)
+        loadRow.addWidget(self.loadButton)
+        saveRow = QHBoxLayout()
+        self.saveInput = QLineEdit()
+        self.saveButton = QPushButton("Save current request")
+        saveRow.addWidget(self.saveInput)
+        saveRow.addWidget(self.saveButton)
+        self.layout.addLayout(loadRow)
+        self.layout.addLayout(saveRow)
+
+    def reloadSavedRequestDropdown(self):
+        d = self.savedDropdown
+        d.clear()
+        for r in self.savedRequests:
+            d.addItem(r["name"])
+        
 
 
 

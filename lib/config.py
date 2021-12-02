@@ -365,21 +365,21 @@ class Config:
                 "inc": CUSTOM,
                 "req": NONE,
                 "humanString": "ERROR_URL",
-                "activeInTransactionTableHeader": False,
+                "isActive": False,
                 "position": 99
             },
             "successfulurlredirect": {
                 "inc": CUSTOM,
                 "req": NONE,
                 "humanString": "SUCCESS_URL",
-                "activeInTransactionTableHeader": False,
+                "isActive": False,
                 "position": 99
             },
             "billingcountryiso2a": {
                 "inc": CUSTOM,
                 "req": NONE,
                 "humanString": "BILLING_COUNTRY",
-                "activeInTransactionTableHeader": False,
+                "isActive": False,
                 "position": 99
             }
 
