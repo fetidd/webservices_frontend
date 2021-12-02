@@ -142,7 +142,7 @@ class Config:
                 "position": 99
             },
             "paymenttypedescription": {
-                "inc": QUERY,
+                "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Payment type",
                 "activeInTransactionTableHeader": True,
@@ -156,7 +156,7 @@ class Config:
                 "position": 99
             },
             "requesttypedescription": {
-                "inc": QUERY,
+                "inc": QUERY | CUSTOM,
                 "req": NONE,
                 "humanString": "Request type",
                 "activeInTransactionTableHeader": True,
@@ -366,6 +366,27 @@ class Config:
                 "activeInTransactionTableHeader": True,
                 "position": 0
             },
+            "errorurlredirect": {
+                "inc": CUSTOM,
+                "req": NONE,
+                "humanString": "ERROR_URL",
+                "activeInTransactionTableHeader": False,
+                "position": 99
+            },
+            "successfulurlredirect": {
+                "inc": CUSTOM,
+                "req": NONE,
+                "humanString": "SUCCESS_URL",
+                "activeInTransactionTableHeader": False,
+                "position": 99
+            },
+            "billingcountryiso2a": {
+                "inc": CUSTOM,
+                "req": NONE,
+                "humanString": "BILLING_COUNTRY",
+                "activeInTransactionTableHeader": False,
+                "position": 99
+            }
 
         })
 
